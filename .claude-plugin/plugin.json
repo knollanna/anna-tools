@@ -1,0 +1,16 @@
+{
+  "name": "anna-tools",
+  "version": "0.2.0",
+  "description": "Anna Knoll's personal AI tooling. Standing rules, a project catalog, and hooks that load the right context per repo.",
+  "author": {
+    "name": "Anna Knoll",
+    "url": "https://annaknoll.com"
+  },
+  "repository": "https://github.com/knollanna/anna-tools",
+  "license": "UNLICENSED",
+  "keywords": [
+    "claude-code",
+    "context-engineering",
+    "tooling"
+  ]
+}
