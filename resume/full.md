@@ -158,8 +158,9 @@ AI Specialist
 
 Sourced from Anna directly or from shipped copy on annaknoll.com.
 
-- **Next move:** leading a team of Forward Deployed Engineers at Salesforce. Start date and
-  scope not yet recorded.
+- **In process, not settled:** interviewing internally for a Portfolio Leader role leading a
+  team of Forward Deployed Engineers. Panel Monday, August 17, 2026. Never write this into a
+  resume, bio, or cover letter as a held role. Pipeline detail is in `job/`.
 - **Site copy framing:** "A technical leader with a linguist's ear and an architect's rigor. I
   find the real problem, and build the teams that solve it." In plain terms: turning "that
   sounds complicated" into "let's do it."
