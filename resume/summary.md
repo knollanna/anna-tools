@@ -13,7 +13,9 @@ prev. Senior Manager). Leads a team of 10 Technical Architects on enterprise HLS
 serves as Tech Exec on named accounts. Launched and operationalized the team that owns
 customer POC success for Agentforce and Data 360.
 
-**Next:** leading a team of a new team at Salesforce.
+**In process (not settled):** interviewing internally for a role
+team of a new team. Panel Monday, a later date. **Do not state this as a
+current or confirmed role** in a bio, cover letter, or application.
 
 ## The shape of the career
 
