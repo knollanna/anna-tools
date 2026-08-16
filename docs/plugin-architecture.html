@@ -10,6 +10,7 @@
     --acc: #0E6F68;
     --sig: #A8760A;
     --sig-soft: #EFE0C2;
+    --bar: #FFFFFFEE;
 
     --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --serif: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
@@ -26,6 +27,7 @@
       --acc: #4FB5AA;
       --sig: #D9A227;
       --sig-soft: #3A2F17;
+      --bar: #0F1716EE;
     }
   }
   :root[data-theme="dark"] {
@@ -38,8 +40,10 @@
     --acc: #4FB5AA;
     --sig: #D9A227;
     --sig-soft: #3A2F17;
+    --bar: #0F1716EE;
   }
 
+  * { box-sizing: border-box; }
   body {
     background: var(--bg);
     color: var(--ink);
@@ -47,504 +51,494 @@
     font-size: 17px;
     line-height: 1.62;
     margin: 0;
-    padding: 0 24px 96px;
+    padding: 0 clamp(16px, 4vw, 40px) 96px;
   }
-  .wrap { max-width: 66ch; margin: 0 auto; }
-  .wide { max-width: 860px; margin-left: auto; margin-right: auto; }
+  .wrap { max-width: 980px; margin: 0 auto; }
 
-  h1, h2, h3, .eyebrow, .lede, th, .fignum, figcaption {
-    font-family: var(--sans);
-  }
-  h1 {
-    font-size: clamp(2.1rem, 5.5vw, 3.1rem);
-    font-weight: 800;
-    letter-spacing: -0.032em;
-    line-height: 1.04;
-    text-wrap: balance;
-    margin: 0 0 18px;
-  }
-  h2 {
-    font-size: 1.42rem;
-    font-weight: 750;
-    letter-spacing: -0.018em;
-    line-height: 1.2;
-    text-wrap: balance;
-    margin: 0 0 4px;
-  }
-  h3 {
-    font-size: 1.02rem;
-    font-weight: 700;
-    letter-spacing: -0.008em;
-    margin: 0 0 6px;
-  }
-  p { margin: 0 0 1.05em; }
-  a { color: var(--acc); }
+  h1, h2, .eyebrow, .lede, .claim, th, td, figcaption, summary,
+  .topbar, .obj-title, .steps, footer { font-family: var(--sans); }
 
+  /* ---------- sticky control bar ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; gap: 16px;
+    background: var(--bar);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+    margin: 0 calc(-1 * clamp(16px, 4vw, 40px));
+    padding: 9px clamp(16px, 4vw, 40px);
+  }
+  .topbar-title {
+    font-size: 0.8rem; font-weight: 700; letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .topbar nav { display: flex; gap: 3px; margin-left: auto; }
+  .topbar nav a {
+    font-family: var(--mono); font-size: 0.7rem;
+    color: var(--muted); text-decoration: none;
+    padding: 4px 7px; border-radius: 3px;
+  }
+  .topbar nav a:hover, .topbar nav a:focus-visible { background: var(--surface-2); color: var(--ink); }
+  #toggle {
+    font-family: var(--sans); font-size: 0.74rem; font-weight: 650;
+    letter-spacing: 0.01em;
+    color: var(--bg); background: var(--acc);
+    border: none; border-radius: 3px;
+    padding: 7px 13px; cursor: pointer; white-space: nowrap;
+    margin-left: auto;
+  }
+  .topbar nav + #toggle { margin-left: 8px; }
+  #toggle:hover { opacity: 0.88; }
+  :focus-visible { outline: 3px solid var(--sig); outline-offset: 2px; }
+  @media (max-width: 800px) { .topbar nav { display: none; } }
+
+  /* ---------- masthead ---------- */
   header.masthead {
     border-bottom: 2px solid var(--ink);
-    padding: 72px 0 26px;
+    padding: 60px 0 26px;
     margin-bottom: 8px;
+    max-width: 62ch;
+  }
+  h1 {
+    font-size: clamp(2.2rem, 6vw, 3.4rem);
+    font-weight: 800; letter-spacing: -0.034em; line-height: 1.02;
+    text-wrap: balance; margin: 0 0 18px;
   }
   .eyebrow {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.13em;
-    color: var(--muted);
-    margin: 0 0 20px;
+    font-family: var(--mono); font-size: 0.72rem;
+    text-transform: uppercase; letter-spacing: 0.13em;
+    color: var(--muted); margin: 0 0 18px;
   }
   .lede {
-    font-size: 1.16rem;
-    line-height: 1.45;
-    font-weight: 420;
-    color: var(--ink);
-    margin: 0 0 6px;
-    text-wrap: pretty;
+    font-size: 1.18rem; line-height: 1.45; font-weight: 420;
+    margin: 0; text-wrap: pretty;
   }
   .byline {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    color: var(--muted);
-    letter-spacing: 0.04em;
-    margin: 22px 0 0;
+    font-family: var(--mono); font-size: 0.72rem; color: var(--muted);
+    margin: 20px 0 0;
   }
 
-  section { padding: 44px 0 0; }
+  /* ---------- sections ---------- */
+  section { padding: 52px 0 0; scroll-margin-top: 60px; }
   .sec-head {
-    display: flex;
-    align-items: baseline;
-    gap: 14px;
-    border-top: 1px solid var(--rule);
-    padding-top: 16px;
-    margin-bottom: 18px;
+    display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+    border-top: 1px solid var(--rule); padding-top: 16px; margin-bottom: 14px;
   }
   .sec-head .eyebrow { margin: 0; white-space: nowrap; }
-
-  figure {
-    margin: 30px 0 34px;
-    padding: 22px 20px 16px;
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    overflow-x: auto;
+  h2 {
+    font-size: 1.5rem; font-weight: 760; letter-spacing: -0.02em;
+    line-height: 1.16; text-wrap: balance; margin: 0;
   }
-  figure svg { display: block; width: 100%; height: auto; min-width: 560px; }
-  figcaption {
-    font-size: 0.82rem;
-    line-height: 1.45;
-    color: var(--muted);
-    margin-top: 16px;
-    padding-top: 12px;
-    border-top: 1px solid var(--rule);
-  }
-  figcaption b { color: var(--ink); font-weight: 650; }
-
-  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; margin: 8px 0 26px; }
-  th, td {
-    text-align: left;
-    vertical-align: top;
-    padding: 11px 14px 11px 0;
-    border-bottom: 1px solid var(--rule);
-  }
-  th {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted);
-    font-weight: 700;
-    border-bottom: 1px solid var(--ink);
-  }
-  td { font-family: var(--sans); line-height: 1.45; }
-  td:first-child { font-weight: 650; padding-right: 22px; white-space: nowrap; }
-  .tablewrap { overflow-x: auto; }
-  .tablewrap table { min-width: 520px; }
-
-  code, .path {
-    font-family: var(--mono);
-    font-size: 0.86em;
-    background: var(--surface-2);
-    padding: 1px 5px;
-    border-radius: 2px;
-  }
-
-  .callout {
-    background: var(--surface);
-    border-left: 3px solid var(--acc);
-    padding: 18px 20px;
-    margin: 26px 0;
-  }
-  .callout p:last-child { margin-bottom: 0; }
-  .callout .eyebrow { margin-bottom: 8px; }
-
-  .warn { border-left-color: var(--sig); }
-
-  ul.tight { margin: 0 0 1.05em; padding-left: 1.2em; }
-  ul.tight li { margin-bottom: 0.42em; }
-
-  .pull {
-    font-family: var(--sans);
-    font-size: 1.2rem;
-    font-weight: 640;
-    line-height: 1.32;
-    letter-spacing: -0.014em;
-    text-wrap: balance;
-    margin: 30px 0;
-    padding-left: 18px;
+  .claim {
+    font-size: clamp(1.18rem, 2.4vw, 1.52rem);
+    font-weight: 600; line-height: 1.34; letter-spacing: -0.016em;
+    text-wrap: pretty; max-width: 40ch;
+    margin: 0 0 4px; padding-left: 18px;
     border-left: 3px solid var(--sig);
   }
 
-  footer {
-    margin-top: 56px;
-    border-top: 2px solid var(--ink);
-    padding-top: 18px;
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    color: var(--muted);
-    line-height: 1.6;
+  /* ---------- figures ---------- */
+  figure {
+    margin: 26px 0 8px; padding: 22px 20px 16px;
+    background: var(--surface); border: 1px solid var(--rule);
+    overflow-x: auto;
+  }
+  figure svg { display: block; width: 100%; height: auto; min-width: 580px; }
+  figcaption {
+    font-size: 0.84rem; line-height: 1.5; color: var(--muted);
+    margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--rule);
+  }
+  figcaption b { color: var(--ink); font-weight: 650; }
+
+  /* ---------- disclosure ---------- */
+  details.detail { margin: 14px 0 0; }
+  details.detail > summary {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 0.74rem; font-weight: 650; letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted); cursor: pointer; list-style: none;
+    padding: 5px 0;
+  }
+  details.detail > summary::-webkit-details-marker { display: none; }
+  details.detail > summary::before {
+    content: "+"; font-family: var(--mono); font-size: 0.95rem;
+    line-height: 1; color: var(--acc); font-weight: 700;
+  }
+  details.detail[open] > summary::before { content: "–"; }
+  details.detail > summary:hover { color: var(--ink); }
+  .detail-body {
+    font-family: var(--serif); max-width: 64ch;
+    padding: 6px 0 4px 17px; border-left: 1px solid var(--rule);
+  }
+  .detail-body p { margin: 0 0 1em; }
+  .detail-body p:last-child { margin-bottom: 0; }
+
+  /* ---------- tables ---------- */
+  .tablewrap { overflow-x: auto; margin: 22px 0 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; min-width: 540px; }
+  th, td { text-align: left; vertical-align: top; padding: 11px 16px 11px 0; border-bottom: 1px solid var(--rule); }
+  th {
+    font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted); font-weight: 700; border-bottom: 1px solid var(--ink);
+  }
+  td { line-height: 1.45; }
+  td:first-child { font-weight: 680; padding-right: 22px; white-space: nowrap; }
+
+  /* ---------- objections ---------- */
+  .objs { display: grid; gap: 10px; margin-top: 22px; }
+  details.obj {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-left: 3px solid var(--sig); padding: 0;
+  }
+  details.obj > summary {
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 14px 18px; cursor: pointer; list-style: none;
+  }
+  details.obj > summary::-webkit-details-marker { display: none; }
+  details.obj > summary::before {
+    content: "+"; font-family: var(--mono); font-weight: 700;
+    color: var(--sig); font-size: 0.95rem; line-height: 1.3;
+  }
+  details.obj[open] > summary::before { content: "–"; }
+  .obj-title { font-size: 1.02rem; font-weight: 680; letter-spacing: -0.008em; }
+  .obj-body {
+    font-family: var(--serif); font-size: 0.97rem;
+    padding: 0 18px 16px 40px; max-width: 68ch;
+  }
+  .obj-body p { margin: 0 0 0.85em; }
+  .obj-body p:last-child { margin-bottom: 0; }
+
+  /* ---------- steps ---------- */
+  .steps { margin: 22px 0 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 9px; }
+  .steps li {
+    counter-increment: s; position: relative;
+    padding: 11px 16px 11px 46px;
+    background: var(--surface); border: 1px solid var(--rule);
+    font-size: 0.95rem; line-height: 1.45;
+  }
+  .steps li::before {
+    content: counter(s); position: absolute; left: 17px; top: 11px;
+    font-family: var(--mono); font-size: 0.8rem; font-weight: 700; color: var(--acc);
+  }
+  .steps b { font-weight: 680; }
+
+  code {
+    font-family: var(--mono); font-size: 0.86em;
+    background: var(--surface-2); padding: 1px 5px; border-radius: 2px;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    * { animation: none !important; transition: none !important; }
+  footer {
+    margin-top: 60px; border-top: 2px solid var(--ink); padding-top: 18px;
+    font-family: var(--mono); font-size: 0.72rem; color: var(--muted); line-height: 1.65;
   }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
 
 <div class="wrap">
+
+  <div class="topbar">
+    <span class="topbar-title">The Context Layer</span>
+    <nav aria-label="Sections">
+      <a href="#s1">01</a><a href="#s2">02</a><a href="#s3">03</a><a href="#s4">04</a>
+      <a href="#s5">05</a><a href="#s6">06</a><a href="#s7">07</a><a href="#s8">08</a>
+    </nav>
+    <button id="toggle" type="button" aria-expanded="false">Show detail</button>
+  </div>
+
   <header class="masthead">
     <p class="eyebrow">Architecture note</p>
     <h1>The Context Layer</h1>
     <p class="lede">How to structure shared AI tooling so a delivery org stops re-deriving what it already knows — and what that actually costs.</p>
     <p class="byline">Anna Knoll · August 2026</p>
   </header>
-</div>
 
-<div class="wrap">
-  <section>
-    <div class="sec-head"><p class="eyebrow">01 / Problem</p><h2>The expensive knowledge is the unwritten kind</h2></div>
+  <!-- 01 -->
+  <section id="s1">
+    <div class="sec-head"><p class="eyebrow">01 / Problem</p><h2>Where the time actually goes</h2></div>
+    <p class="claim">Build and validate take what they take. What collapses is the re-derivation at the front and the loss at the back.</p>
 
-    <p>An AI assistant starts every session with amnesia. That is a manageable problem when the missing knowledge is public — it can look things up. It is an expensive problem when the missing knowledge is organizational: how this customer names things, which sandbox is safe to point at, who approves a deployment, what was promised in the demo, why the obvious approach was abandoned last quarter.</p>
+    <figure>
+      <svg viewBox="0 0 720 236" role="img" aria-label="Two engagement timelines compared. Without a context layer, the engagement opens with a long re-derivation phase and closes with a lossy handoff. With a context layer, both of those segments collapse while the build and validate phases stay the same length.">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <text x="0" y="14" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="currentColor" opacity="0.62" letter-spacing="1.1">WITHOUT A CONTEXT LAYER</text>
+        <rect x="0" y="26" width="160" height="36" fill="var(--sig-soft)" stroke="var(--sig)" stroke-width="1.5"/>
+        <rect x="160" y="26" width="210" height="36" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+        <rect x="370" y="26" width="100" height="36" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+        <rect x="470" y="26" width="140" height="36" fill="var(--sig-soft)" stroke="var(--sig)" stroke-width="1.5"/>
+        <text x="80" y="49" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" font-weight="600" fill="currentColor">Re-derive context</text>
+        <text x="265" y="49" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">Build</text>
+        <text x="420" y="49" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">Validate</text>
+        <text x="540" y="49" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" font-weight="600" fill="currentColor">Lossy handoff</text>
+        <line x1="0" y1="78" x2="610" y2="78" stroke="currentColor" stroke-width="1" opacity="0.3"/>
+        <text x="610" y="94" text-anchor="end" font-family="ui-monospace, Menlo, monospace" font-size="9.5" fill="currentColor" opacity="0.55">ENGAGEMENT N</text>
+        <text x="0" y="136" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="currentColor" opacity="0.62" letter-spacing="1.1">WITH A CONTEXT LAYER</text>
+        <rect x="0" y="148" width="30" height="36" fill="var(--acc)" stroke="var(--acc)" stroke-width="1.5"/>
+        <rect x="30" y="148" width="210" height="36" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+        <rect x="240" y="148" width="100" height="36" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+        <rect x="340" y="148" width="45" height="36" fill="var(--acc)" stroke="var(--acc)" stroke-width="1.5"/>
+        <text x="135" y="171" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">Build</text>
+        <text x="290" y="171" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">Validate</text>
+        <text x="15" y="204" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="currentColor" opacity="0.75">load</text>
+        <text x="362" y="204" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="currentColor" opacity="0.75">write</text>
+        <line x1="0" y1="200" x2="385" y2="200" stroke="currentColor" stroke-width="1" opacity="0.3"/>
+        <line x1="393" y1="166" x2="600" y2="166" stroke="var(--acc)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar)" color="var(--acc)"/>
+        <text x="497" y="159" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-style="italic" fill="var(--acc)">feeds engagement N+1</text>
+        <text x="610" y="222" text-anchor="end" font-family="ui-monospace, Menlo, monospace" font-size="9.5" fill="currentColor" opacity="0.55">TIME SAVED</text>
+        <line x1="385" y1="212" x2="610" y2="212" stroke="var(--sig)" stroke-width="2"/>
+      </svg>
+      <figcaption><b>No numbers on purpose.</b> The magnitude is what you measure on a real pilot, not what you assert in a slide. Note also that the first engagement is the one that pays — it writes the context down.</figcaption>
+    </figure>
 
-    <p>Without that, the assistant produces work that is locally plausible and organizationally wrong. That is worse than no help, because now a senior person has to review it.</p>
-
-    <p>The same gap is what makes the pre-sales-to-delivery handoff expensive. One team scopes and demos a solution; another inherits a customer with expectations, a half-documented org, and a chat thread where the real constraints were discussed. Context is lost exactly where it costs the most.</p>
+    <details class="detail"><summary>Detail</summary><div class="detail-body">
+      <p>An AI assistant starts every session with amnesia. That is manageable when the missing knowledge is public — it can look things up. It is expensive when the missing knowledge is organizational: how this customer names things, which sandbox is safe to point at, who approves a deployment, what was promised in the demo, why the obvious approach was abandoned last quarter.</p>
+      <p>Without it, the assistant produces work that is locally plausible and organizationally wrong. That is worse than no help, because now a senior person has to review it.</p>
+      <p>The same gap is what makes the pre-sales-to-delivery handoff expensive. One team scopes and demos a solution; another inherits a customer with expectations, a half-documented org, and a chat thread where the real constraints were discussed. Context is lost exactly where it costs the most.</p>
+    </div></details>
   </section>
-</div>
 
-<div class="wide">
-  <figure>
-    <svg viewBox="0 0 720 236" role="img" aria-label="Two engagement timelines compared. Without a context layer, the engagement opens with a long re-derivation phase and closes with a lossy handoff. With a context layer, both of those segments collapse while the build and validate phases stay the same length.">
-      <defs>
-        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
-        </marker>
-      </defs>
+  <!-- 02 -->
+  <section id="s2">
+    <div class="sec-head"><p class="eyebrow">02 / Primitives</p><h2>Five answers, sorted by when they load</h2></div>
+    <p class="claim">The useful way to tell them apart is not what they contain. It is when they enter working memory, because that is what you pay for.</p>
 
-      <text x="0" y="14" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="currentColor" opacity="0.62" letter-spacing="1.1">WITHOUT A CONTEXT LAYER</text>
-
-      <rect x="0" y="26" width="160" height="36" fill="var(--sig-soft)" stroke="var(--sig)" stroke-width="1.5"/>
-      <rect x="160" y="26" width="210" height="36" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
-      <rect x="370" y="26" width="100" height="36" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
-      <rect x="470" y="26" width="140" height="36" fill="var(--sig-soft)" stroke="var(--sig)" stroke-width="1.5"/>
-
-      <text x="80" y="49" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" font-weight="600" fill="currentColor">Re-derive context</text>
-      <text x="265" y="49" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">Build</text>
-      <text x="420" y="49" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">Validate</text>
-      <text x="540" y="49" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" font-weight="600" fill="currentColor">Lossy handoff</text>
-
-      <line x1="0" y1="78" x2="610" y2="78" stroke="currentColor" stroke-width="1" opacity="0.3"/>
-      <text x="610" y="94" text-anchor="end" font-family="ui-monospace, Menlo, monospace" font-size="9.5" fill="currentColor" opacity="0.55">ENGAGEMENT N</text>
-
-      <text x="0" y="136" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="currentColor" opacity="0.62" letter-spacing="1.1">WITH A CONTEXT LAYER</text>
-
-      <rect x="0" y="148" width="30" height="36" fill="var(--acc)" stroke="var(--acc)" stroke-width="1.5"/>
-      <rect x="30" y="148" width="210" height="36" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
-      <rect x="240" y="148" width="100" height="36" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
-      <rect x="340" y="148" width="45" height="36" fill="var(--acc)" stroke="var(--acc)" stroke-width="1.5"/>
-
-      <text x="135" y="171" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">Build</text>
-      <text x="290" y="171" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">Validate</text>
-      <text x="15" y="204" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="currentColor" opacity="0.75">load</text>
-      <text x="362" y="204" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="currentColor" opacity="0.75">write</text>
-
-      <line x1="0" y1="200" x2="385" y2="200" stroke="currentColor" stroke-width="1" opacity="0.3"/>
-
-      <line x1="393" y1="166" x2="600" y2="166" stroke="var(--acc)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar)" color="var(--acc)"/>
-      <text x="497" y="159" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-style="italic" fill="var(--acc)">feeds engagement N+1</text>
-      <text x="610" y="222" text-anchor="end" font-family="ui-monospace, Menlo, monospace" font-size="9.5" fill="currentColor" opacity="0.55">TIME SAVED</text>
-      <line x1="385" y1="212" x2="610" y2="212" stroke="var(--sig)" stroke-width="2"/>
-    </svg>
-    <figcaption><b>The middle does not shrink.</b> Building and validating take what they take. What collapses is the re-derivation at the front and the loss at the back — and only the second engagement onward gets the full benefit, because the first one is what writes the context down. The magnitude is the thing to measure on a real pilot, not to assert in a slide.</figcaption>
-  </figure>
-</div>
-
-<div class="wrap">
-  <section>
-    <div class="sec-head"><p class="eyebrow">02 / Primitives</p><h2>Four answers, sorted by when they load</h2></div>
-
-    <p>Every piece of a context layer is one of four things. The useful way to tell them apart is not what they contain — it is when they enter the model's working memory, because that is what you pay for.</p>
-  </section>
-</div>
-
-<div class="wide">
-  <div class="tablewrap">
-    <table>
-      <thead><tr><th>Primitive</th><th>Answers</th><th>Loads</th><th>Cost</th></tr></thead>
-      <tbody>
-        <tr><td>Rules</td><td>"Always work this way here"</td><td>On demand, by pointer</td><td>Only when read</td></tr>
-        <tr><td>Skills</td><td>"When doing <em>this</em>, here are the steps"</td><td>On demand, by name or match</td><td>Only when invoked</td></tr>
-        <tr><td>Agents</td><td>"Send a specialist with its own context"</td><td>When delegated to</td><td>Its own window, not yours</td></tr>
-        <tr><td>Hooks</td><td>"Never let this happen"</td><td>Automatically, on an event</td><td>Near zero — it is a script</td></tr>
-        <tr><td>Scripts</td><td>"Don't ask a model to do this at all"</td><td>Called by the above</td><td>Zero tokens</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<div class="wrap">
-  <section>
-    <p>The last row is the highest-leverage idea and the easiest to skip. Any time a prompt says <em>"carefully check each of the following two hundred things,"</em> that is a script nobody has written yet. Let deterministic code do the scanning and reserve the model for the judgment the code cannot express.</p>
-
-    <div class="callout">
-      <p class="eyebrow">The design rule</p>
-      <p>A hook is the only layer that cannot be talked out of it. Rules and skills are prose, and a model can drift from prose. When something must be guaranteed rather than usually observed, it has to be a script bound to an event.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Primitive</th><th>Answers</th><th>Loads</th><th>Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Rules</td><td>"Always work this way here"</td><td>On demand, by pointer</td><td>Only when read</td></tr>
+          <tr><td>Skills</td><td>"When doing this, here are the steps"</td><td>On demand, by name or match</td><td>Only when invoked</td></tr>
+          <tr><td>Agents</td><td>"Send a specialist with its own context"</td><td>When delegated to</td><td>Its own window, not yours</td></tr>
+          <tr><td>Hooks</td><td>"Never let this happen"</td><td>Automatically, on an event</td><td>Near zero — it is a script</td></tr>
+          <tr><td>Scripts</td><td>"Don't ask a model to do this at all"</td><td>Called by the above</td><td>Zero tokens</td></tr>
+        </tbody>
+      </table>
     </div>
+
+    <details class="detail"><summary>Detail</summary><div class="detail-body">
+      <p>The last row is the highest-leverage idea and the easiest to skip. Any time a prompt says <em>"carefully check each of the following two hundred things,"</em> that is a script nobody has written yet. Let deterministic code do the scanning and reserve the model for the judgment the code cannot express.</p>
+      <p><b>A hook is the only layer that cannot be talked out of it.</b> Rules and skills are prose, and a model can drift from prose. When something must be guaranteed rather than usually observed, it has to be a script bound to an event.</p>
+    </div></details>
   </section>
 
-  <section>
+  <!-- 03 -->
+  <section id="s3">
     <div class="sec-head"><p class="eyebrow">03 / Mechanism</p><h2>Pointers, not content</h2></div>
+    <p class="claim">Naming a rule costs a line. Loading it costs its full length in every session, forever.</p>
 
-    <p>The naive implementation loads every rule into every session. It works, and it quietly taxes every conversation — including the ones that never touch the rules it loaded.</p>
+    <figure>
+      <svg viewBox="0 0 720 250" role="img" aria-label="Session start flow. A hook fires, resolves the engagement archetype and scans the working tree, then injects a short index of pointers. The model reads only the rules the task requires; the rest are never loaded.">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <rect x="0" y="46" width="122" height="52" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="61" y="68" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="650" fill="currentColor">Session</text>
+        <text x="61" y="84" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="650" fill="currentColor">opens</text>
+        <line x1="126" y1="72" x2="176" y2="72" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <rect x="180" y="26" width="150" height="92" fill="var(--surface-2)" stroke="var(--acc)" stroke-width="2"/>
+        <text x="255" y="46" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10.5" font-weight="700" fill="var(--acc)">HOOK</text>
+        <text x="255" y="66" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="currentColor">1. archetype declared</text>
+        <text x="255" y="82" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="currentColor">2. scan working tree</text>
+        <text x="255" y="104" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-style="italic" fill="currentColor" opacity="0.72">select, don't list</text>
+        <line x1="334" y1="72" x2="384" y2="72" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <text x="359" y="63" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" fill="currentColor" opacity="0.7">injects</text>
+        <rect x="388" y="24" width="180" height="96" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="478" y="46" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" font-weight="650" fill="currentColor">The index</text>
+        <text x="478" y="65" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" fill="currentColor" opacity="0.85">what this engagement is</text>
+        <text x="478" y="81" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" fill="currentColor" opacity="0.85">+ rule paths + why</text>
+        <text x="478" y="104" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" font-weight="700" fill="var(--acc)">~20 lines</text>
+        <line x1="478" y1="124" x2="478" y2="154" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar2)"/>
+        <text x="492" y="144" font-family="system-ui, sans-serif" font-size="10" font-style="italic" fill="currentColor" opacity="0.75">reads on demand</text>
+        <rect x="330" y="160" width="140" height="42" fill="var(--surface-2)" stroke="var(--acc)" stroke-width="1.5"/>
+        <text x="400" y="177" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10.5" fill="currentColor">interface-bar.md</text>
+        <text x="400" y="193" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" fill="var(--acc)">archetype</text>
+        <rect x="478" y="160" width="140" height="42" fill="var(--surface-2)" stroke="var(--acc)" stroke-width="1.5"/>
+        <text x="548" y="177" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10.5" fill="currentColor">deploy-gates.md</text>
+        <text x="548" y="193" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" fill="var(--acc)">detected in tree</text>
+        <rect x="330" y="210" width="140" height="30" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.45"/>
+        <text x="400" y="229" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10.5" fill="currentColor" opacity="0.5">data-model.md</text>
+        <rect x="478" y="210" width="140" height="30" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.45"/>
+        <text x="548" y="229" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10.5" fill="currentColor" opacity="0.5">migrations.md</text>
+        <text x="632" y="184" font-family="system-ui, sans-serif" font-size="10.5" font-weight="650" fill="var(--acc)">selected</text>
+        <text x="632" y="229" font-family="system-ui, sans-serif" font-size="10.5" fill="currentColor" opacity="0.5">skipped</text>
+      </svg>
+      <figcaption><b>Two selection axes, and both are needed.</b> One rule was selected because the archetype claims it, the other because the hook found the evidence in the tree — the declared type is always a little wrong. The index records which, so a bad selection is visible instead of mysterious.</figcaption>
+    </figure>
 
-    <p>The better shape: a session-start hook resolves where it is, then injects a short index — what this project is, and the paths to the rules that apply, each with a one-line "read this when." The model pulls the two it needs and ignores the rest.</p>
-
-    <p>Which rules make the index is itself two decisions, and both are needed. <b>By archetype:</b> the engagement declares its type, and each rule declares which types it serves. <b>By detection:</b> the hook looks at what is actually in the working tree, because the declared type is always a little wrong — a service with no front end still turns out to ship a handful of templates, and the interface bar applies to those whether or not anyone updated the manifest.</p>
-
-    <p>Each rule declares its own applicability, so adding one requires no change to the hook. And the index records <em>why</em> each rule was selected, which turns a wrong selection into something you can see instead of something you have to reverse-engineer.</p>
+    <details class="detail"><summary>Detail</summary><div class="detail-body">
+      <p>The naive implementation loads every rule into every session. It works, and it quietly taxes every conversation — including the ones that never touch the rules it loaded.</p>
+      <p>The better shape: a session-start hook resolves where it is, then injects a short index — what this engagement is, and the paths to the rules that apply, each with a one-line "read this when." The model pulls the two it needs and ignores the rest.</p>
+      <p>Which rules make the index is itself two decisions. <b>By archetype:</b> the engagement declares its type, and each rule declares which types it serves. <b>By detection:</b> the hook looks at what is actually in the working tree, because the declared type is always a little wrong — a service with no front end still turns out to ship a handful of templates, and the interface bar applies to those whether or not anyone updated the manifest.</p>
+      <p>Each rule declares its own applicability, so adding one requires no change to the hook.</p>
+    </div></details>
   </section>
-</div>
 
-<div class="wide">
-  <figure>
-    <svg viewBox="0 0 720 250" role="img" aria-label="Session start flow. A hook fires, resolves the working directory against a project catalog, and injects a short index of pointers. The model then reads only the rule files the task requires, leaving the others unread.">
-      <defs>
-        <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
-        </marker>
-      </defs>
-
-      <rect x="0" y="46" width="122" height="52" fill="none" stroke="currentColor" stroke-width="1.5"/>
-      <text x="61" y="68" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="650" fill="currentColor">Session</text>
-      <text x="61" y="84" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="650" fill="currentColor">opens</text>
-
-      <line x1="126" y1="72" x2="176" y2="72" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar2)"/>
-
-      <rect x="180" y="26" width="150" height="92" fill="var(--surface-2)" stroke="var(--acc)" stroke-width="2"/>
-      <text x="255" y="46" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10.5" font-weight="700" fill="var(--acc)">HOOK</text>
-      <text x="255" y="66" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="currentColor">1. archetype declared</text>
-      <text x="255" y="82" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="currentColor">2. scan working tree</text>
-      <text x="255" y="104" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-style="italic" fill="currentColor" opacity="0.72">select, don't list</text>
-
-      <line x1="334" y1="72" x2="384" y2="72" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar2)"/>
-      <text x="359" y="63" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" fill="currentColor" opacity="0.7">injects</text>
-
-      <rect x="388" y="24" width="180" height="96" fill="none" stroke="currentColor" stroke-width="1.5"/>
-      <text x="478" y="46" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" font-weight="650" fill="currentColor">The index</text>
-      <text x="478" y="65" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" fill="currentColor" opacity="0.85">what this project is</text>
-      <text x="478" y="81" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" fill="currentColor" opacity="0.85">+ rule paths</text>
-      <text x="478" y="104" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" font-weight="700" fill="var(--acc)">~20 lines</text>
-
-      <line x1="478" y1="124" x2="478" y2="158" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar2)"/>
-      <text x="492" y="146" font-family="system-ui, sans-serif" font-size="10" font-style="italic" fill="currentColor" opacity="0.75">reads on demand</text>
-
-      <rect x="330" y="160" width="140" height="42" fill="var(--surface-2)" stroke="var(--acc)" stroke-width="1.5"/>
-      <text x="400" y="177" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10.5" fill="currentColor">interface-bar.md</text>
-      <text x="400" y="193" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" fill="var(--acc)">archetype</text>
-
-      <rect x="478" y="160" width="140" height="42" fill="var(--surface-2)" stroke="var(--acc)" stroke-width="1.5"/>
-      <text x="548" y="177" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10.5" fill="currentColor">deploy-gates.md</text>
-      <text x="548" y="193" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" fill="var(--acc)">detected in tree</text>
-
-      <rect x="330" y="210" width="140" height="30" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.45"/>
-      <text x="400" y="229" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10.5" fill="currentColor" opacity="0.5">data-model.md</text>
-
-      <rect x="478" y="210" width="140" height="30" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.45"/>
-      <text x="548" y="229" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10.5" fill="currentColor" opacity="0.5">migrations.md</text>
-
-      <text x="632" y="184" font-family="system-ui, sans-serif" font-size="10.5" font-weight="650" fill="var(--acc)">selected</text>
-      <text x="632" y="229" font-family="system-ui, sans-serif" font-size="10.5" fill="currentColor" opacity="0.5">skipped</text>
-    </svg>
-    <figcaption><b>The index is the whole trick.</b> Naming a rule costs about a line; loading it costs its full length in every session, forever. One rule here was selected because the engagement's archetype claims it, the other because the hook found the evidence in the working tree — and the index records which, so a wrong selection is visible rather than mysterious. The dashed rules cost nothing this session, and would have cost their full weight under a preload-everything design.</figcaption>
-  </figure>
-</div>
-
-<div class="wrap">
-  <section>
+  <!-- 04 -->
+  <section id="s4">
     <div class="sec-head"><p class="eyebrow">04 / Structure</p><h2>Two layers, and neither works alone</h2></div>
+    <p class="claim">Collapse them into one and you are choosing between stale standards and leaked customer specifics.</p>
 
-    <p>This is the load-bearing architectural decision, and it is the one most implementations get wrong by collapsing it into a single layer.</p>
+    <figure>
+      <svg viewBox="0 0 720 268" role="img" aria-label="Two layers feeding one session. A shared standards layer installed once per machine supplies conventions, gates and procedures. A per-engagement layer committed to the customer's own repository supplies org shape, decisions and open questions. Both feed the working session; removing either degrades it in a specific way.">
+        <defs>
+          <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <rect x="0" y="16" width="300" height="98" fill="var(--surface-2)" stroke="var(--acc)" stroke-width="2"/>
+        <text x="16" y="40" font-family="ui-monospace, Menlo, monospace" font-size="10" font-weight="700" fill="var(--acc)" letter-spacing="1">STANDARDS LAYER</text>
+        <text x="16" y="59" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor" opacity="0.9">installed once per machine</text>
+        <text x="16" y="80" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">platform rules · gates · procedures</text>
+        <text x="16" y="98" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">the firm's accumulated practice</text>
+        <rect x="420" y="16" width="300" height="98" fill="none" stroke="currentColor" stroke-width="2"/>
+        <text x="436" y="40" font-family="ui-monospace, Menlo, monospace" font-size="10" font-weight="700" fill="currentColor" letter-spacing="1">ENGAGEMENT LAYER</text>
+        <text x="436" y="59" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor" opacity="0.9">committed to the customer's repo</text>
+        <text x="436" y="80" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">org shape · decisions · open questions</text>
+        <text x="436" y="98" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">what this customer specifically needs</text>
+        <line x1="150" y1="118" x2="310" y2="168" stroke="var(--acc)" stroke-width="1.8" marker-end="url(#ar3)" color="var(--acc)"/>
+        <line x1="570" y1="118" x2="410" y2="168" stroke="currentColor" stroke-width="1.8" marker-end="url(#ar3)"/>
+        <text x="196" y="150" font-family="system-ui, sans-serif" font-size="10.5" fill="var(--acc)">how we work</text>
+        <text x="452" y="150" font-family="system-ui, sans-serif" font-size="10.5" fill="currentColor" opacity="0.8">what is true here</text>
+        <rect x="270" y="174" width="180" height="52" fill="var(--surface-2)" stroke="currentColor" stroke-width="2"/>
+        <text x="360" y="196" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12.5" font-weight="700" fill="currentColor">The working session</text>
+        <text x="360" y="214" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="currentColor" opacity="0.8">informed before the first prompt</text>
+        <text x="0" y="250" font-family="system-ui, sans-serif" font-size="11" fill="currentColor" opacity="0.72">Standards only → the tooling runs, but blind to this customer.</text>
+        <text x="420" y="250" font-family="system-ui, sans-serif" font-size="11" fill="currentColor" opacity="0.72">Engagement only → every team reinvents the practice.</text>
+      </svg>
+      <figcaption><b>The split is what makes it distributable.</b> One layer updates when the firm learns something; the other when the customer does. This, not the file format, is the part worth copying.</figcaption>
+    </figure>
 
-    <p>Shared tooling holds two kinds of content with different lifetimes. <b>Standards</b> are identical across every engagement and change slowly: platform non-negotiables, review expectations, deployment discipline, the procedures a firm has agreed on. <b>Engagement context</b> is different for every customer and changes weekly: their org shape, their naming conventions, their change-control process, what has already been decided and what is still open.</p>
-
-    <p>Put standards in each engagement and you get N copies drifting apart. Put engagement context at the shared layer and every customer inherits every other customer's specifics, which is both useless and a disclosure problem.</p>
+    <details class="detail"><summary>Detail</summary><div class="detail-body">
+      <p>This is the load-bearing architectural decision, and the one most implementations get wrong by collapsing it into a single layer.</p>
+      <p>Shared tooling holds two kinds of content with different lifetimes. <b>Standards</b> are identical across every engagement and change slowly: platform non-negotiables, review expectations, deployment discipline, the procedures a firm has agreed on. <b>Engagement context</b> is different for every customer and changes weekly: their org shape, their naming conventions, their change-control process, what has been decided and what is still open.</p>
+      <p>Put standards in each engagement and you get N copies drifting apart. Put engagement context at the shared layer and every customer inherits every other customer's specifics — which is a disclosure problem, not just an architecture problem.</p>
+    </div></details>
   </section>
-</div>
 
-<div class="wide">
-  <figure>
-    <svg viewBox="0 0 720 268" role="img" aria-label="Two layers feeding one session. A shared standards layer installed once per machine supplies conventions, gates and procedures. A per-engagement layer committed to the customer's own repository supplies org shape, decisions and open questions. Both feed the working session; removing either one degrades it in a specific way.">
-      <defs>
-        <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
-        </marker>
-      </defs>
-
-      <rect x="0" y="16" width="300" height="98" fill="var(--surface-2)" stroke="var(--acc)" stroke-width="2"/>
-      <text x="16" y="40" font-family="ui-monospace, Menlo, monospace" font-size="10" font-weight="700" fill="var(--acc)" letter-spacing="1">STANDARDS LAYER</text>
-      <text x="16" y="59" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor" opacity="0.9">installed once per machine</text>
-      <text x="16" y="80" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">platform rules · gates · procedures</text>
-      <text x="16" y="98" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">the firm's accumulated practice</text>
-
-      <rect x="420" y="16" width="300" height="98" fill="none" stroke="currentColor" stroke-width="2"/>
-      <text x="436" y="40" font-family="ui-monospace, Menlo, monospace" font-size="10" font-weight="700" fill="currentColor" letter-spacing="1">ENGAGEMENT LAYER</text>
-      <text x="436" y="59" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor" opacity="0.9">committed to the customer's repo</text>
-      <text x="436" y="80" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">org shape · decisions · open questions</text>
-      <text x="436" y="98" font-family="system-ui, sans-serif" font-size="11.5" fill="currentColor">what this customer specifically needs</text>
-
-      <line x1="150" y1="118" x2="310" y2="168" stroke="var(--acc)" stroke-width="1.8" marker-end="url(#ar3)" color="var(--acc)"/>
-      <line x1="570" y1="118" x2="410" y2="168" stroke="currentColor" stroke-width="1.8" marker-end="url(#ar3)"/>
-
-      <text x="196" y="150" font-family="system-ui, sans-serif" font-size="10.5" fill="var(--acc)">how we work</text>
-      <text x="452" y="150" font-family="system-ui, sans-serif" font-size="10.5" fill="currentColor" opacity="0.8">what is true here</text>
-
-      <rect x="270" y="174" width="180" height="52" fill="var(--surface-2)" stroke="currentColor" stroke-width="2"/>
-      <text x="360" y="196" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12.5" font-weight="700" fill="currentColor">The working session</text>
-      <text x="360" y="214" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="currentColor" opacity="0.8">informed before the first prompt</text>
-
-      <text x="0" y="250" font-family="system-ui, sans-serif" font-size="11" fill="currentColor" opacity="0.72">Standards only → the tooling runs, but blind to this customer.</text>
-      <text x="420" y="250" font-family="system-ui, sans-serif" font-size="11" fill="currentColor" opacity="0.72">Engagement only → every team reinvents the practice.</text>
-    </svg>
-    <figcaption><b>The split is what makes it distributable.</b> One layer updates when the firm learns something; the other updates when the customer does. A design with a single layer forces a choice between stale shared standards and leaked customer specifics — which is why the two-layer split, not the file format, is the part worth copying.</figcaption>
-  </figure>
-</div>
-
-<div class="wrap">
-  <section>
+  <!-- 05 -->
+  <section id="s5">
     <div class="sec-head"><p class="eyebrow">05 / Payoff</p><h2>The handoff becomes a file</h2></div>
+    <p class="claim">A second session that never saw the first picks up cleanly. That is the whole thesis.</p>
 
-    <p>Everything above is plumbing for one outcome. When a session produces something that matters — a scope, a set of constraints, a decision and its reasoning, a list of what is still unresolved — it writes it to disk in the engagement layer rather than leaving it in a chat transcript.</p>
+    <figure>
+      <svg viewBox="0 0 720 172" role="img" aria-label="A pre-sales session writes an artifact containing scope, constraints, decisions and open questions to the engagement layer. A later delivery session, which never saw the first conversation, loads that artifact and continues.">
+        <defs>
+          <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <rect x="0" y="46" width="176" height="62" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="88" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="650" fill="currentColor">Pre-sales session</text>
+        <text x="88" y="90" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" fill="currentColor" opacity="0.75">scopes and demos</text>
+        <line x1="180" y1="77" x2="256" y2="77" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar4)"/>
+        <text x="218" y="68" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="currentColor" opacity="0.75">writes</text>
+        <rect x="260" y="28" width="200" height="98" fill="var(--surface-2)" stroke="var(--sig)" stroke-width="2"/>
+        <text x="360" y="50" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" font-weight="700" fill="var(--sig)" letter-spacing="1">THE ARTIFACT</text>
+        <text x="360" y="70" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="currentColor">scope · constraints</text>
+        <text x="360" y="87" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="currentColor">decisions · open questions</text>
+        <text x="360" y="110" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-style="italic" fill="currentColor" opacity="0.72">versioned, diffable, reviewable</text>
+        <line x1="464" y1="77" x2="540" y2="77" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar4)"/>
+        <text x="502" y="68" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="currentColor" opacity="0.75">loads</text>
+        <rect x="544" y="46" width="176" height="62" fill="none" stroke="var(--acc)" stroke-width="2"/>
+        <text x="632" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="650" fill="currentColor">Delivery session</text>
+        <text x="632" y="90" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" fill="currentColor" opacity="0.75">never saw the first</text>
+        <text x="360" y="156" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" font-style="italic" fill="currentColor" opacity="0.8">The handoff stops being a demo org plus somebody's memory.</text>
+      </svg>
+      <figcaption><b>This is the claim to lead with.</b> Everything else is infrastructure for it.</figcaption>
+    </figure>
 
-    <p>Two things follow. Human context stays readable, because nobody scrolls past a four-hundred-line generated spec to find the one question they were asked. And the work becomes durable: a document can be diffed, reviewed, and handed to the next person or the next session as a real artifact.</p>
-  </section>
-</div>
-
-<div class="wide">
-  <figure>
-    <svg viewBox="0 0 720 172" role="img" aria-label="A pre-sales session writes an artifact containing scope, constraints, decisions and open questions to the engagement layer. A later delivery session, which never saw the first conversation, loads that artifact and continues. The demonstration is the second session picking up cleanly.">
-      <defs>
-        <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
-        </marker>
-      </defs>
-
-      <rect x="0" y="46" width="176" height="62" fill="none" stroke="currentColor" stroke-width="1.5"/>
-      <text x="88" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="650" fill="currentColor">Pre-sales session</text>
-      <text x="88" y="90" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" fill="currentColor" opacity="0.75">scopes and demos</text>
-
-      <line x1="180" y1="77" x2="256" y2="77" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar4)"/>
-      <text x="218" y="68" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="currentColor" opacity="0.75">writes</text>
-
-      <rect x="260" y="28" width="200" height="98" fill="var(--surface-2)" stroke="var(--sig)" stroke-width="2"/>
-      <text x="360" y="50" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" font-weight="700" fill="var(--sig)" letter-spacing="1">THE ARTIFACT</text>
-      <text x="360" y="70" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="currentColor">scope · constraints</text>
-      <text x="360" y="87" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="currentColor">decisions · open questions</text>
-      <text x="360" y="110" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-style="italic" fill="currentColor" opacity="0.72">versioned, diffable, reviewable</text>
-
-      <line x1="464" y1="77" x2="540" y2="77" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar4)"/>
-      <text x="502" y="68" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="currentColor" opacity="0.75">loads</text>
-
-      <rect x="544" y="46" width="176" height="62" fill="none" stroke="var(--acc)" stroke-width="2"/>
-      <text x="632" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="650" fill="currentColor">Delivery session</text>
-      <text x="632" y="90" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" fill="currentColor" opacity="0.75">never saw the first</text>
-
-      <text x="360" y="156" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" font-style="italic" fill="currentColor" opacity="0.8">The second session picking up cleanly is the whole demonstration.</text>
-    </svg>
-    <figcaption><b>This is the claim to lead with.</b> Everything else is infrastructure for it: the handoff stops being a demo org plus somebody's memory, and becomes a document that both the humans and the tooling on either side can read.</figcaption>
-  </figure>
-</div>
-
-<div class="wrap">
-  <section>
-    <div class="sec-head"><p class="eyebrow">06 / Mapping</p><h2>What each layer holds in a platform engagement</h2></div>
-
-    <p>Nothing above is specific to a vendor. Mapped onto a Salesforce delivery context, the pieces land like this.</p>
-  </section>
-</div>
-
-<div class="wide">
-  <div class="tablewrap">
-    <table>
-      <thead><tr><th>Piece</th><th>In an engagement</th></tr></thead>
-      <tbody>
-        <tr><td>Engagement charter</td><td>Per customer: org shape, licensed clouds, integration surface, sandbox strategy, who decides what</td></tr>
-        <tr><td>Archetypes</td><td>Engagement types that pre-load different content — a Service Cloud migration, a Data Cloud activation, an Agentforce pilot each carry different rules and checklists</td></tr>
-        <tr><td>Shared rules</td><td>Platform non-negotiables: governor limits, no hardcoded IDs, metadata deployment discipline, security review expectations</td></tr>
-        <tr><td>Local rules</td><td>The customer's own conventions: naming standards, change-control process, release calendar</td></tr>
-        <tr><td>Gates</td><td>Never deploy to production without a validation-only run. Flag a hardcoded org ID. Block a change touching a managed package.</td></tr>
-        <tr><td>Scripts</td><td>Deterministic CLI and Metadata API work: org diffs, permission-set audits, test-coverage checks</td></tr>
-        <tr><td>Artifacts</td><td>The scope, constraints, decisions and open questions the next session inherits</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<div class="wrap">
-  <section>
-    <p class="pull">The gates are the row that changes behavior. Everything else is advice a busy person can skip.</p>
+    <details class="detail"><summary>Detail</summary><div class="detail-body">
+      <p>When a session produces something that matters — a scope, a set of constraints, a decision and its reasoning, a list of what is still unresolved — it writes it to disk in the engagement layer rather than leaving it in a chat transcript.</p>
+      <p>Two things follow. Human context stays readable, because nobody scrolls past a four-hundred-line generated spec to find the one question they were asked. And the work becomes durable: a document can be diffed, reviewed, and handed to the next person or the next session as a real artifact.</p>
+    </div></details>
   </section>
 
-  <section>
+  <!-- 06 -->
+  <section id="s6">
+    <div class="sec-head"><p class="eyebrow">06 / Mapping</p><h2>What each piece is, in a platform engagement</h2></div>
+    <p class="claim">The gates are the row that changes behavior. Everything else is advice a busy person can skip.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Piece</th><th>In an engagement</th></tr></thead>
+        <tbody>
+          <tr><td>Charter</td><td>Per customer: org shape, licensed clouds, integration surface, sandbox strategy, who decides what</td></tr>
+          <tr><td>Archetypes</td><td>Engagement types that pre-load different content — a Service Cloud migration, a Data Cloud activation, an Agentforce pilot each carry different rules and checklists</td></tr>
+          <tr><td>Shared rules</td><td>Platform non-negotiables: governor limits, no hardcoded IDs, metadata deployment discipline, security review expectations</td></tr>
+          <tr><td>Local rules</td><td>The customer's own conventions: naming standards, change-control process, release calendar</td></tr>
+          <tr><td>Gates</td><td>Never deploy to production without a validation-only run. Flag a hardcoded org ID. Block a change touching a managed package.</td></tr>
+          <tr><td>Scripts</td><td>Deterministic CLI and Metadata API work: org diffs, permission-set audits, test-coverage checks</td></tr>
+          <tr><td>Artifacts</td><td>The scope, constraints, decisions and open questions the next session inherits</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section id="s7">
     <div class="sec-head"><p class="eyebrow">07 / Limits</p><h2>Where this breaks</h2></div>
+    <p class="claim">Four objections a room with real delivery experience will raise, and the honest answers.</p>
 
-    <p>Four objections that a room with real delivery experience will raise, and the honest answers.</p>
+    <div class="objs">
+      <details class="obj">
+        <summary><span class="obj-title">Two different things are called "agents"</span></summary>
+        <div class="obj-body">
+          <p>Customer-facing agents run in the customer's org and are the product being sold. The agents in this pattern are developer-side — they help the engineer build. Conflating them gets the whole idea dismissed by anyone technical.</p>
+          <p>The defensible claim is narrower and stronger: better internal build context produces better customer-facing deployments, faster.</p>
+        </div>
+      </details>
 
-    <div class="callout warn">
-      <p class="eyebrow">Two different things are called "agents"</p>
-      <p>Customer-facing agents run in the customer's org and are the product being sold. The agents in this pattern are developer-side — they help the engineer build. Conflating them gets the whole idea dismissed by anyone technical. The defensible claim is narrower and stronger: better internal build context produces better customer-facing deployments, faster.</p>
-    </div>
+      <details class="obj">
+        <summary><span class="obj-title">Platform metadata is not a filesystem</span></summary>
+        <div class="obj-body">
+          <p>Much of this assumes source control: hooks on git operations, scripts diffing files, branch discipline. A declarative change made in a sandbox by a customer admin is invisible to all of it, and production orgs have no source tracking to fall back on.</p>
+          <p><b>The gap is measurable, though.</b> A script can diff deployed metadata against the repository and report only its verdict — a dozen lines, not a dump of XML. That is the deterministic-first pattern applied exactly where it pays.</p>
+          <p><b>Where it runs is the design decision.</b> Not at session start: without source tracking that check is a full retrieve, which is tens of seconds to minutes, and a hook that stalls every session gets disabled within a week. It belongs on the deploy command, where blocking for thirty seconds is obviously worth it — or on a schedule that writes a drift report the session merely reads, reporting both the drift and the age of the report.</p>
+          <p><b>What it still cannot see:</b> profiles and permission sets retrieve only partially, so their diffs are unreliable; flow versions and active states are awkward; and data is not metadata at all, so a picklist value changed under a running agent is invisible to the entire approach. Drift detection narrows the gap. It does not close it, and it never tells you why something changed.</p>
+        </div>
+      </details>
 
-    <div class="callout warn">
-      <p class="eyebrow">Platform metadata is not a filesystem</p>
-      <p>Much of what makes this work assumes source control: hooks on git operations, scripts diffing files, branch discipline. Source-tracked development gives you an approximation, but a declarative change made in a sandbox by a customer admin is invisible to all of it. Any version of this pitch that assumes clean source control gets punctured by the first person who has actually run a pilot.</p>
-    </div>
+      <details class="obj">
+        <summary><span class="obj-title">Customer environments carry compliance constraints</span></summary>
+        <div class="obj-body">
+          <p>Which model, hosted where, seeing whose data, retained how long, under whose agreement. A pattern that is fine on a laptop needs a different answer before it touches a regulated customer's org.</p>
+          <p>Have that answer, or scope it out of v1 explicitly. Discovering it in month two is worse than declining it in week one.</p>
+        </div>
+      </details>
 
-    <div class="callout warn">
-      <p class="eyebrow">Customer environments carry compliance constraints</p>
-      <p>Which model, hosted where, seeing whose data, retained how long, under whose agreement. A pattern that is fine on a laptop needs a different answer before it touches a regulated customer's org. Have that answer, or scope it out of v1 explicitly.</p>
-    </div>
-
-    <div class="callout warn">
-      <p class="eyebrow">The adoption curve is the real risk</p>
-      <p>A mature context layer is years of accumulated friction written down. A firm cannot buy that; it has to accumulate it. What is available on day one is the structure plus a seeded set of platform rules, and the honest framing that it compounds. Overpromising immediate value is how these initiatives die in month three.</p>
+      <details class="obj">
+        <summary><span class="obj-title">The adoption curve is the real risk</span></summary>
+        <div class="obj-body">
+          <p>A mature context layer is years of accumulated friction written down. A firm cannot buy that; it has to accumulate it.</p>
+          <p>What is available on day one is the structure plus a seeded set of platform rules, and the honest framing that it compounds. Overpromising immediate value is how these initiatives die in month three.</p>
+        </div>
+      </details>
     </div>
   </section>
 
-  <section>
+  <!-- 08 -->
+  <section id="s8">
     <div class="sec-head"><p class="eyebrow">08 / Sequence</p><h2>What to build first</h2></div>
+    <p class="claim">Each layer should trace to a specific thing that went wrong twice.</p>
 
-    <p>The most common failure is starting with the org chart of a larger operation — a full agent mesh, an installer, a dozen archetypes — before any of it is earned. The order that works runs the other way.</p>
-
-    <ul class="tight">
+    <ol class="steps">
       <li><b>Write the charter and three or four platform rules.</b> Prose, in files. That is most of the value.</li>
       <li><b>Add one gate</b> that blocks something genuinely dangerous, once prose has visibly failed to prevent it.</li>
       <li><b>Add a script</b> the first time you catch yourself asking a model to check fifty things.</li>
       <li><b>Add a procedure</b> the second time you explain the same process to someone.</li>
       <li><b>Add specialist agents</b> only when a task reliably exhausts the context window.</li>
-    </ul>
+    </ol>
 
-    <p>Each step should be traceable to a specific thing that went wrong twice. A layer added before its second occurrence is a layer nobody uses, and it makes the ones that matter harder to find.</p>
-
-    <div class="callout">
-      <p class="eyebrow">A credible pilot</p>
-      <p>One archetype, one gate, one artifact. Pick a narrow engagement type, write the charter and a few rules, add a gate that blocks something real, run a build task, then hand the artifact to a second session that has never seen the first. The second session picking up cleanly is the demonstration, and it fits in ten minutes.</p>
-    </div>
+    <details class="detail"><summary>Detail</summary><div class="detail-body">
+      <p>The most common failure is starting with the org chart of a larger operation — a full agent mesh, an installer, a dozen archetypes — before any of it is earned. A layer added before its second occurrence is a layer nobody uses, and it makes the ones that matter harder to find.</p>
+      <p><b>A credible pilot:</b> one archetype, one gate, one artifact. Pick a narrow engagement type, write the charter and a few rules, add a gate that blocks something real, run a build task, then hand the artifact to a second session that has never seen the first. The second session picking up cleanly is the demonstration, and it fits in ten minutes.</p>
+    </div></details>
   </section>
 
   <footer>
@@ -552,3 +546,23 @@
     Derived from a working implementation across four personal repositories. Structure is transferable; standards are seeded and then diverge; per-person content never transfers.</p>
   </footer>
 </div>
+
+<script>
+  (function () {
+    var btn = document.getElementById('toggle');
+    var all = function () { return Array.prototype.slice.call(document.querySelectorAll('details')); };
+    btn.addEventListener('click', function () {
+      var items = all();
+      var expand = items.some(function (d) { return !d.open; });
+      items.forEach(function (d) { d.open = expand; });
+      btn.textContent = expand ? 'Hide detail' : 'Show detail';
+      btn.setAttribute('aria-expanded', expand ? 'true' : 'false');
+    });
+    document.addEventListener('toggle', function () {
+      var items = all();
+      var anyOpen = items.some(function (d) { return d.open; });
+      btn.textContent = anyOpen ? 'Hide detail' : 'Show detail';
+      btn.setAttribute('aria-expanded', anyOpen ? 'true' : 'false');
+    }, true);
+  })();
+</script>
