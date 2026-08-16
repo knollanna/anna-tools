@@ -1,5 +1,7 @@
 ---
 description: How to maintain the job-search context and pipeline tracker when Anna shares an interview, a transcript, a recruiter call, or a new application.
+profiles: [tooling]
+detect: ["job"]
 ---
 
 # Job search
