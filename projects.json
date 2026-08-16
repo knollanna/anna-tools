@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "owner": "knollanna",
+  "root": "/Users/anna/Documents/Claude/Projects",
+  "projects": [
+    {
+      "name": "annaknoll-site",
+      "repo": "github.com/knollanna/annaknoll-site",
+      "path": "annaknoll-site",
+      "default_branch": "main",
+      "status": "active",
+      "what": "Two-sided personal site. Work at the apex (/), travel at /travel/. Hue carries meaning: violet = technical, green = travel.",
+      "stack": "Hand-written static HTML, plain CSS, vanilla JS. No framework, no build step for the site itself. Python 3 stdlib tooling for tokens, ramps, and social cards.",
+      "deploy": "Netlify, publish dir public/. Push to main auto-deploys. DNS on Cloudflare, records DNS-only (proxying breaks Netlify SSL).",
+      "architecture": "annaknoll-site/README.md",
+      "also_read": [
+        "annaknoll-site/design/HANDOFF-design-system.md",
+        "annaknoll-site/brand/README.md"
+      ],
+      "watch_out": "public/ is the publish boundary. A file added there is a world-readable URL on the next deploy. Social cards bake copy into pixels and go stale silently."
+    },
+    {
+      "name": "farewatch",
+      "repo": "github.com/knollanna/FareWatch",
+      "path": "farewatch",
+      "default_branch": "main",
+      "status": "active",
+      "what": "Flight-fare monitoring for a travel advisor. Watches on routes and dates, checked every two hours; email and Slack alerts when a fare hits target. Each client gets a private live status page. Hotel monitoring added via LiteAPI.",
+      "stack": "Python, Flask, gunicorn. Supabase (Postgres). Duffel for fares, LiteAPI for hotels, SendGrid for email, Slack webhooks.",
+      "deploy": "Render. Web app always on, price checker on a 2-hourly cron. Push to main redeploys. Live at farewatch.annaknoll.com.",
+      "architecture": "farewatch/README.md",
+      "also_read": [
+        "farewatch/docs/project-context.md",
+        "farewatch/docs/product-overview.md"
+      ],
+      "watch_out": "Two programs sharing one database that never call each other. Live .env in the working tree. Stored hotel rates are framed as observed, not guaranteed."
+    },
+    {
+      "name": "jobwatch",
+      "repo": "github.com/knollanna/jobwatch",
+      "path": "jobwatch",
+      "default_branch": "main",
+      "status": "active",
+      "what": "Job-opening scraper. Pulls from Adzuna, Greenhouse/Ashby ATS boards, and Getro community boards; dedupes against Supabase, scores by fit, sends a nightly digest.",
+      "stack": "Python, own Supabase project separate from FareWatch's. SendGrid, Slack.",
+      "deploy": "Render cron, runs daily at 11pm ET so results are ready by morning. Push to main redeploys.",
+      "architecture": "jobwatch/README.md",
+      "watch_out": "Runs daily by design. Own Supabase project, separate from FareWatch's, because Render wipes the filesystem between cron runs. Scrapes nothing that prohibits it in ToS (no LinkedIn, no Indeed) and that constraint holds.",
+      "status_note": "Running daily. Feeds an active job search."
+    }
+  ]
+}
