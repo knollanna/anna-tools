@@ -1,5 +1,7 @@
 ---
 description: The accessibility and typography bar for anything Anna builds with a UI. Palette and layout live in each project.
+profiles: [static-site]
+detect: ["*.css", "*.html"]
 ---
 
 # Design system

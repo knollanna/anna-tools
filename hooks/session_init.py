@@ -19,12 +19,27 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _lib  # noqa: E402
 
-RULES = [
-    ("writing.md", "Voice. Before anything Anna will publish, commit, or read."),
-    ("design-system.md", "The a11y and type bar. Before any CSS, color, type, or markup."),
-    ("github.md", "Branches, commits, review. Before committing or pushing."),
-    ("job-search.md", "Interviews, transcripts, applications, pipeline changes."),
-]
+def select(cwd: str, profile: str) -> tuple[list[tuple], list[str]]:
+    """Pick rules two ways: declared by profile, or detected in the directory.
+
+    A rule declares its own applicability in its frontmatter, so adding one
+    needs no change here. Returns the selected rules plus the names of any that
+    were considered and skipped, which is what makes a wrong selection
+    debuggable instead of mysterious.
+    """
+    chosen, skipped = [], []
+    for rule in _lib.rules():
+        if "*" in rule["profiles"]:
+            chosen.append((rule, "always"))
+        elif profile and profile in rule["profiles"]:
+            chosen.append((rule, f"profile: {profile}"))
+        else:
+            hit = _lib.detected(cwd, rule["detect"])
+            if hit:
+                chosen.append((rule, f"found {hit}"))
+            else:
+                skipped.append(rule["name"])
+    return chosen, skipped
 
 
 def main() -> int:
@@ -55,11 +70,45 @@ def main() -> int:
             joined = ", ".join(f"`{home.parent / d}`" for d in docs)
             lines.append(f"- **Read before changing anything here:** {joined}")
 
-    lines += ["", "### Rules (read on demand, not preloaded)", ""]
-    for filename, when in RULES:
-        path = root / "rules" / filename
-        if path.exists():
-            lines.append(f"- `{path}` — {when}")
+    profile = (project or {}).get("profile", "")
+    chosen, skipped = select(cwd, profile)
+
+    header = "### Rules that apply here (read on demand, not preloaded)"
+    if profile:
+        header += f"\n\n_Profile: **{profile}**._"
+    lines += ["", header, ""]
+
+    for rule, why in chosen:
+        lines.append(f"- `{rule['path']}` _({why})_ — {rule['description']}")
+
+    if not chosen:
+        lines.append("- None matched. Rules live in "
+                     f"`{root / 'rules'}` if you need one anyway.")
+    if skipped:
+        lines += [
+            "",
+            f"Not applicable here, do not read unless asked: {', '.join(skipped)}.",
+        ]
+    # Only a name outside the registry is an error. A valid profile that no rule
+    # claims is fine — it means the universal and detected rules already cover it.
+    registry = _lib.known_profiles()
+    if registry:
+        warnings = []
+        if profile and profile not in registry:
+            warnings.append(
+                f"project profile `{profile}` is not in profiles.json"
+            )
+        for rule in _lib.rules():
+            unknown = [
+                p for p in rule["profiles"] if p != "*" and p not in registry
+            ]
+            if unknown:
+                warnings.append(
+                    f"`{rule['name']}` claims unknown profile(s): {', '.join(unknown)}"
+                )
+        if warnings:
+            lines += ["", "⚠️ Catalog drift — a rule may be silently not loading:"]
+            lines += [f"- {w}" for w in warnings]
 
     lines += [
         "",

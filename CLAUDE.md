@@ -62,8 +62,46 @@ from this directory. Every session on this machine gets it, in any repo.
 
 `session_init.py` is what makes that worth anything. A session opened in `farewatch/` never
 reads this file, so on `SessionStart` the hook names the project from `projects.json` and
-lists the rules with absolute paths. It emits **pointers, not content** — loading four rule
-files into every session would tax every conversation that doesn't need them.
+lists the rules that apply. It emits **pointers, not content** — loading four rule files into
+every session would tax every conversation that doesn't need them.
+
+## How rules get selected
+
+Rules are chosen two ways, and each rule declares its own applicability in its frontmatter.
+Adding a rule needs no change to any hook.
+
+```yaml
+---
+description: ...          # shown in the session index
+profiles: [static-site]   # declared: project archetypes this serves. "*" means everywhere.
+detect: ["*.css", ".git"] # observed: pull it in if these exist in the working tree
+---
+```
+
+- **By profile.** Each project in `projects.json` claims one, and the valid names live in
+  `profiles.json`. Declared, stable, and the thing you'd reason about when adding a project.
+- **By detection.** A bounded walk of the working tree, depth 3, skipping `node_modules` and
+  friends. This catches what a profile misses: FareWatch is a `python-service`, but it has
+  `templates/` and a stylesheet, so the design bar applies there and the hook works that out
+  on its own.
+
+The index says **why** each rule was selected (`profile: static-site`, `found .git`, `always`)
+and names the ones it deliberately skipped. A wrong selection should be debuggable in one
+glance rather than mysterious.
+
+`profiles.json` exists to catch drift. A profile no rule claims is fine — it means the
+universal and detected rules already cover it. A profile name that isn't in the registry is a
+typo, and a typo means a rule silently never loads, which is the failure mode worth spending a
+file to prevent.
+
+Current selection:
+
+| Project | Profile | Rules |
+| --- | --- | --- |
+| annaknoll-site | `static-site` | design-system (profile), github (found `.git`), writing (always) |
+| farewatch | `python-service` | design-system (found `*.html`), github, writing |
+| jobwatch | `python-service` | github, writing |
+| anna-tools | `tooling` | job-search (profile), design-system, github, writing |
 
 To work on the plugin itself without the installed copy interfering:
 

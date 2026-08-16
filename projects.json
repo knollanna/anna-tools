@@ -8,6 +8,7 @@
       "repo": "github.com/knollanna/annaknoll-site",
       "path": "annaknoll-site",
       "default_branch": "main",
+      "profile": "static-site",
       "status": "active",
       "what": "Two-sided personal site. Work at the apex (/), travel at /travel/. Hue carries meaning: violet = technical, green = travel.",
       "stack": "Hand-written static HTML, plain CSS, vanilla JS. No framework, no build step for the site itself. Python 3 stdlib tooling for tokens, ramps, and social cards.",
@@ -24,6 +25,7 @@
       "repo": "github.com/knollanna/FareWatch",
       "path": "farewatch",
       "default_branch": "main",
+      "profile": "python-service",
       "status": "active",
       "what": "Flight-fare monitoring for a travel advisor. Watches on routes and dates, checked every two hours; email and Slack alerts when a fare hits target. Each client gets a private live status page. Hotel monitoring added via LiteAPI.",
       "stack": "Python, Flask, gunicorn. Supabase (Postgres). Duffel for fares, LiteAPI for hotels, SendGrid for email, Slack webhooks.",
@@ -40,6 +42,7 @@
       "repo": "github.com/knollanna/jobwatch",
       "path": "jobwatch",
       "default_branch": "main",
+      "profile": "python-service",
       "status": "active",
       "what": "Job-opening scraper. Pulls from Adzuna, Greenhouse/Ashby ATS boards, and Getro community boards; dedupes against Supabase, scores by fit, sends a nightly digest.",
       "stack": "Python, own Supabase project separate from FareWatch's. SendGrid, Slack.",
@@ -47,6 +50,20 @@
       "architecture": "jobwatch/README.md",
       "watch_out": "Runs daily by design. Own Supabase project, separate from FareWatch's, because Render wipes the filesystem between cron runs. Scrapes nothing that prohibits it in ToS (no LinkedIn, no Indeed) and that constraint holds.",
       "status_note": "Running daily. Feeds an active job search."
+    },
+    {
+      "name": "anna-tools",
+      "repo": "github.com/knollanna/anna-tools",
+      "path": "anna-tools",
+      "default_branch": "main",
+      "profile": "tooling",
+      "status": "active",
+      "what": "This toolkit. Standing rules, a project catalog, and hooks that load the right context per repo. Ships as a Claude Code plugin.",
+      "stack": "Markdown rules, Python 3 stdlib hooks and scripts. No dependencies.",
+      "deploy": "Not deployed. Registered at user scope as anna-tools@anna-local.",
+      "architecture": "anna-tools/CLAUDE.md",
+      "also_read": ["anna-tools/docs/plugin-architecture.html"],
+      "watch_out": "job/ is gitignored and private. Rules declare their own applicability in frontmatter; adding a rule needs no change to the hooks."
     }
   ]
 }

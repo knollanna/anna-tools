@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "_comment": "Project archetypes. A profile is a name a project claims and rules opt into via their frontmatter. This registry exists so a typo in either place is caught rather than silently dropping a rule. A profile with no rules of its own is legitimate: it just means the universal and detected rules are enough.",
+  "profiles": {
+    "static-site": "Hand-written HTML and CSS, no framework, no build step. The publish boundary matters and the design system applies.",
+    "python-service": "Python app or scheduled job, Supabase behind it, deployed on Render. A push to main is a deploy.",
+    "tooling": "The toolkit itself. Rules, hooks, catalogs, and the private job-search material."
+  }
+}

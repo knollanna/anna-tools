@@ -1,5 +1,6 @@
 ---
 description: Anna's voice, and the machine-written habits to cut. Applies to published copy, committed text, and conversation.
+profiles: ["*"]
 ---
 
 # Writing
