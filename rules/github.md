@@ -1,5 +1,6 @@
 ---
 description: Branch naming, commit format, and what gets reviewed before it lands. Modeled on FareWatch.
+detect: [".git"]
 ---
 
 # GitHub

@@ -61,6 +61,16 @@ def projects() -> list[dict]:
         return []
 
 
+def known_profiles() -> dict:
+    """Valid archetype names. Empty dict means validation is unavailable, not that
+    nothing is valid — callers must not warn on an empty registry."""
+    try:
+        path = data_home() / "profiles.json"
+        return json.loads(path.read_text(encoding="utf-8")).get("profiles", {})
+    except Exception:
+        return {}
+
+
 def project_for(cwd: str) -> dict | None:
     """Match a working directory to a catalog entry by longest path suffix."""
     if not cwd:
@@ -79,6 +89,111 @@ def project_for(cwd: str) -> dict | None:
             ):
                 best = entry
     return best
+
+
+SKIP_DIRS = {
+    ".git", "node_modules", ".venv", "venv", "__pycache__", ".next",
+    "dist", "build", ".cache", "site-packages", ".mypy_cache", "vendor",
+}
+WALK_BUDGET = 4000  # entries; a SessionStart hook must not stall a session
+
+
+def _scalar(raw: str):
+    """Minimal YAML subset: bare scalars, quoted strings, and [a, b] lists."""
+    raw = raw.strip()
+    if raw.startswith("[") and raw.endswith("]"):
+        items = [i.strip().strip("\"'") for i in raw[1:-1].split(",")]
+        return [i for i in items if i]
+    return raw.strip("\"'")
+
+
+def frontmatter(path: Path) -> dict:
+    """Parse the leading --- block. Returns {} on anything unexpected."""
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return {}
+    if not text.startswith("---"):
+        return {}
+    end = text.find("\n---", 3)
+    if end == -1:
+        return {}
+    out = {}
+    for line in text[3:end].splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or ":" not in line:
+            continue
+        key, _, value = line.partition(":")
+        out[key.strip()] = _scalar(value)
+    return out
+
+
+def rules() -> list[dict]:
+    """Every rule file, with the applicability it declares about itself."""
+    found = []
+    for path in sorted((plugin_root() / "rules").glob("*.md")):
+        meta = frontmatter(path)
+        profiles = meta.get("profiles", [])
+        detect = meta.get("detect", [])
+        found.append(
+            {
+                "path": path,
+                "name": path.name,
+                "description": meta.get("description", ""),
+                "profiles": [profiles] if isinstance(profiles, str) else profiles,
+                "detect": [detect] if isinstance(detect, str) else detect,
+            }
+        )
+    return found
+
+
+def detected(cwd: str, patterns: list[str]) -> str | None:
+    """Return the first pattern that matches something in the tree, else None.
+
+    Bounded walk: a hook that scans a monorepo on every session start is a hook
+    that gets disabled.
+    """
+    if not patterns or not cwd:
+        return None
+    try:
+        root = Path(cwd).resolve()
+        if not root.is_dir():
+            return None
+    except Exception:
+        return None
+
+    literals = [p for p in patterns if "*" not in p]
+    globs = [p for p in patterns if "*" in p]
+
+    for name in literals:
+        if (root / name).exists():
+            return name
+
+    if not globs:
+        return None
+
+    seen = 0
+    stack = [(root, 0)]
+    while stack and seen < WALK_BUDGET:
+        current, depth = stack.pop()
+        if depth > 3:
+            continue
+        try:
+            entries = list(current.iterdir())
+        except Exception:
+            continue
+        for entry in entries:
+            seen += 1
+            if seen > WALK_BUDGET:
+                break
+            if entry.is_dir():
+                if entry.name not in SKIP_DIRS and not entry.name.startswith("."):
+                    stack.append((entry, depth + 1))
+                continue
+            for pattern in globs:
+                if entry.match(pattern):
+                    return pattern
+    return None
 
 
 def emit(event: str, text: str) -> None:
