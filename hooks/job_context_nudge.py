@@ -17,17 +17,21 @@ that misses one nudge.
 Wired on UserPromptSubmit. Reads the hook payload as JSON on stdin.
 """
 
-import json
 import re
 import sys
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
-JOB = REPO / "job"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _lib  # noqa: E402
+
+# job/ follows Anna's content, not the plugin. If this resolved to the plugin root
+# and the plugin were installed from a marketplace cache, the hook would go
+# permanently and silently quiet.
+JOB = _lib.data_home() / "job"
 CONTEXT = JOB / "Anna_Job_Search_Context.md"
 TRACKER_MD = JOB / "tracker.md"
 TRACKER_HTML = JOB / "job_search_tracker.html"
-RULE = "rules/job-search.md"
+RULE = _lib.plugin_root() / "rules" / "job-search.md"
 
 # Phrases that mean "this is about the search" on their own.
 SIGNALS = re.compile(
@@ -86,12 +90,7 @@ def last_updated() -> str:
 
 
 def main() -> int:
-    try:
-        payload = json.load(sys.stdin)
-    except Exception:
-        return 0
-
-    prompt = str(payload.get("prompt", ""))
+    prompt = str(_lib.payload().get("prompt", ""))
     if not prompt or not JOB.is_dir():
         return 0
 
@@ -103,34 +102,32 @@ def main() -> int:
     if TRACKER_HTML.exists() and TRACKER_MD.exists():
         if TRACKER_HTML.stat().st_mtime > TRACKER_MD.stat().st_mtime:
             stale = (
-                "\n- ⚠️ `job/job_search_tracker.html` is newer than `job/tracker.md`. "
-                "Run `python3 scripts/tracker_to_md.py` before relying on the markdown."
+                f"- ⚠️ `{TRACKER_HTML}` is newer than the markdown. Run "
+                f"`python3 {_lib.plugin_root() / 'scripts' / 'tracker_to_md.py'}` "
+                "before relying on it."
             )
 
+    # Absolute paths throughout: this fires in any repo, where a relative path
+    # resolves against the wrong working directory.
     lines = [
         "This prompt looks like it concerns Anna's job search.",
         "",
         f"- **Read `{RULE}` before responding.** It defines what to capture and the hard rules.",
-        f"- Pipeline context: `job/Anna_Job_Search_Context.md` ({last_updated()}).",
-        "- Greppable pipeline: `job/tracker.md`.",
+        f"- Pipeline context: `{CONTEXT}` ({last_updated()}).",
+        f"- Greppable pipeline: `{TRACKER_MD}`.",
         "- If this shares an interview, transcript, call, application, rejection, or new "
         "company, **update the context doc and the tracker as part of this turn** — do not "
         "wait to be asked.",
-        "- `job/` is gitignored and private. Never commit it, publish it, or put it in an "
-        "artifact.",
+        "- That directory is gitignored and private. Never commit it, publish it, or put it "
+        "in an artifact.",
     ]
     if hits:
         lines.append(f"- Already in the pipeline: {', '.join(hits)}. Read the existing entry "
                      "before writing a new one, and never merge details across companies.")
     if stale:
-        lines.append(stale.strip("\n- "))
+        lines.append(stale)
 
-    print(json.dumps({
-        "hookSpecificOutput": {
-            "hookEventName": "UserPromptSubmit",
-            "additionalContext": "\n".join(lines),
-        }
-    }))
+    _lib.emit("UserPromptSubmit", "\n".join(lines))
     return 0
 
 

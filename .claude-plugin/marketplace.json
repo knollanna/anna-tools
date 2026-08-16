@@ -1,0 +1,14 @@
+{
+  "name": "anna-local",
+  "owner": {
+    "name": "Anna Knoll",
+    "url": "https://github.com/knollanna"
+  },
+  "plugins": [
+    {
+      "name": "anna-tools",
+      "source": "./",
+      "description": "Anna Knoll's personal AI tooling: standing rules, project catalog, per-repo context hooks."
+    }
+  ]
+}
