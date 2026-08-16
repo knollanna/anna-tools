@@ -3,8 +3,8 @@
 Anna Knoll's personal AI tooling. Standing conventions for her own projects, kept in one
 place so every session starts knowing them instead of being told again.
 
-This is Phase 1: four rule files and a project catalog. No agents, no hooks, no skills, no
-plugin manifest. Those get added when something annoys her twice, not before.
+Phase 1 plus one hook and one script, both earned. No agents, no skills, no plugin manifest.
+Those get added when something annoys her twice, not before.
 
 ## Non-negotiables
 
@@ -35,11 +35,17 @@ anna-tools/
 ├── rules/
 │   ├── design-system.md   the quality bar for anything with a UI
 │   ├── writing.md         voice, and the LLM tells to cut
-│   └── github.md          branches, commits, what gets reviewed
-└── resume/
-    ├── summary.md         short, always loaded
-    ├── full.md            every role and date, on demand
-    └── stories.md         STAR anecdotes, on demand
+│   ├── github.md          branches, commits, what gets reviewed
+│   └── job-search.md      how to maintain the pipeline files
+├── resume/
+│   ├── summary.md         short, always loaded
+│   ├── full.md            every role and date, on demand
+│   └── stories.md         STAR anecdotes, on demand
+├── hooks/
+│   └── job_context_nudge.py   UserPromptSubmit: surfaces the job rule on a match
+├── scripts/
+│   └── tracker_to_md.py       tracker HTML -> greppable markdown
+└── job/               🔒 GITIGNORED. Never commit, publish, or put in an artifact.
 ```
 
 ## Rules (read on demand)
@@ -49,6 +55,7 @@ anna-tools/
 | `rules/writing.md` | Before writing anything Anna will publish, commit, or read. Effectively always. |
 | `rules/design-system.md` | Before touching CSS, color, type, or markup in any project with a UI |
 | `rules/github.md` | Before branching, committing, opening a PR, or pushing |
+| `rules/job-search.md` | Any interview, transcript, recruiter call, application, or pipeline change. The `job_context_nudge` hook points here automatically. |
 
 ## Resume (read on demand)
 
@@ -71,12 +78,21 @@ Architecture lives in each project's own repo, not here. Read the project's `REA
 how it works before changing anything in it; FareWatch and annaknoll.com both have thorough
 ones and neither is decorative.
 
-## What is not here yet, and why
+## Job search
 
-| Piece | Add it when |
+`job/` holds the pipeline context and tracker. **It is gitignored and stays that way** — it
+carries sensitive employment and compensation detail, named contacts at companies Anna is
+interviewing with, and candid assessments. `rules/job-search.md`
+is the procedure. `hooks/job_context_nudge.py` fires on `UserPromptSubmit` and surfaces that
+rule whenever a prompt carries a job-search signal, so the update doesn't depend on anyone
+remembering. Wired in `~/.claude/settings.json`.
+
+## What is here, and what earned it
+
+| Piece | Status |
 | --- | --- |
-| Skills (`/tailor-resume`, `/new-post`) | You have explained the same process twice |
-| Hooks | Prose stopped being enough and you need a guarantee |
-| Agents | A task reliably burns your context reading files |
-| Scripts | You catch yourself asking a model to check 50 things |
-| A plugin manifest / installer | More than one machine or more than one person needs this |
+| Hook (`job_context_nudge.py`) | **Built.** Anna asked for a guarantee, not a habit — a prose rule that only works when someone remembers to read it is the case a hook exists for. |
+| Script (`tracker_to_md.py`) | **Built.** Converting 60 JS objects to markdown by hand is the definition of work a model should not be doing. |
+| Skills (`/tailor-resume`, `/new-post`) | Not yet. Write one the second time you explain the same process. `/tailor-resume` is the obvious first candidate. |
+| Agents | Not yet. Add when a task reliably burns your context reading files. |
+| A plugin manifest / installer | Not yet. Add when more than one machine or more than one person needs this. |
