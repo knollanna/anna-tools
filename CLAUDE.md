@@ -3,8 +3,9 @@
 Anna Knoll's personal AI tooling. Standing conventions for her own projects, kept in one
 place so every session starts knowing them instead of being told again.
 
-Phase 1 plus one hook and one script, both earned. No agents, no skills, no plugin manifest.
-Those get added when something annoys her twice, not before.
+Ships as a Claude Code plugin, so the rules and hooks travel to every repo instead of only
+working inside this directory. No agents and no skills yet — those get added when something
+annoys her twice, not before.
 
 ## Non-negotiables
 
@@ -30,6 +31,9 @@ Those get added when something annoys her twice, not before.
 
 ```
 anna-tools/
+├── .claude-plugin/
+│   ├── plugin.json        the packaging contract
+│   └── marketplace.json   local marketplace so it installs at user scope
 ├── CLAUDE.md          this file
 ├── projects.json      the catalog: what exists, where, what state it's in
 ├── rules/
@@ -42,11 +46,36 @@ anna-tools/
 │   ├── full.md            every role and date, on demand
 │   └── stories.md         STAR anecdotes, on demand
 ├── hooks/
+│   ├── hooks.json             event wiring
+│   ├── _lib.py                payload parsing + root resolution
+│   ├── session_init.py        SessionStart: where am I, which rules apply
 │   └── job_context_nudge.py   UserPromptSubmit: surfaces the job rule on a match
 ├── scripts/
 │   └── tracker_to_md.py       tracker HTML -> greppable markdown
 └── job/               🔒 GITIGNORED. Never commit, publish, or put in an artifact.
 ```
+
+## How it loads
+
+Registered at user scope in `~/.claude/settings.json` as `anna-tools@anna-local`, sourced
+from this directory. Every session on this machine gets it, in any repo.
+
+`session_init.py` is what makes that worth anything. A session opened in `farewatch/` never
+reads this file, so on `SessionStart` the hook names the project from `projects.json` and
+lists the rules with absolute paths. It emits **pointers, not content** — loading four rule
+files into every session would tax every conversation that doesn't need them.
+
+To work on the plugin itself without the installed copy interfering:
+
+```bash
+claude --plugin-dir /Users/anna/Documents/Claude/Projects/anna-tools
+```
+
+**Two roots, and they are not the same thing.** `CLAUDE_PLUGIN_ROOT` is where `rules/` live
+and may be a marketplace cache copy. `ANNA_TOOLS_HOME` is where Anna's own content lives
+(`projects.json`, `resume/`, `job/`) and never moves. `hooks/_lib.py` resolves both. Collapsing
+them means a cached plugin silently stops finding the job pipeline, and the failure is
+invisible because the hook just goes quiet.
 
 ## Rules (read on demand)
 
@@ -86,6 +115,25 @@ interviewing with, and candid assessments. `rules/job-search.md`
 is the procedure. `hooks/job_context_nudge.py` fires on `UserPromptSubmit` and surfaces that
 rule whenever a prompt carries a job-search signal, so the update doesn't depend on anyone
 remembering. Wired in `~/.claude/settings.json`.
+
+## The seam: what would and wouldn't ship to someone else
+
+This plugin is Anna's. If a second person installed it today they would get her resume, her
+project catalog, and her job pipeline, which is useless to them and private to her.
+
+The line runs through the middle of this repo, and naming it is more useful than pretending
+it isn't there:
+
+| Layer | Contents | Portable? |
+| --- | --- | --- |
+| **Structure** | `.claude-plugin/`, `hooks/hooks.json`, `_lib.py`, `session_init.py`, the rules-as-plain-files pattern, the two-roots split | Yes. This is the transferable part. |
+| **Standards** | `rules/github.md`, the accessibility contract and deterministic-first parts of `rules/design-system.md` | Mostly. A team would seed its own equivalents. |
+| **Personal** | `resume/`, `projects.json`, `job/`, `rules/writing.md`, the annaknoll palette | No. Never. |
+
+A shared version would ship the first row, seed the second, and leave the third to each
+person. That is the two-layer model in `mg-tools-reference/docs/architecture.md`: a standards
+layer plus a per-consumer layer. **Do not build the shared version until someone other than
+Anna actually needs it.**
 
 ## What is here, and what earned it
 

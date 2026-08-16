@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/session_init.py",
+            "timeout": 10,
+            "statusMessage": "Loading anna-tools context"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/job_context_nudge.py",
+            "timeout": 10,
+            "statusMessage": "Checking job-search context"
+          }
+        ]
+      }
+    ]
+  }
+}
