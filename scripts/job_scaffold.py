@@ -29,7 +29,7 @@ INBOX = JOB / "inbox"
 
 # Stages worth a folder. The 29 lost and 10 never-heard-back entries stay as
 # tracker rows; exploding those into directories buys nothing.
-ACTIVE = ["interviewing", "waiting", "applied", "followup"]
+ACTIVE = ["interviewing", "waiting", "applied", "followup", "considering"]
 
 PARENTHETICAL = re.compile(r"\s*\([^)]*\)\s*$")
 NONWORD = re.compile(r"[^a-z0-9]+")
