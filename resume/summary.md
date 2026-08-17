@@ -8,14 +8,17 @@ there, ask.
 
 ## Now
 
-**Director, Technical Architects, Healthcare & Life Sciences at Salesforce** (since Jun 2022,
-prev. Senior Manager). Leads a team of 10 Technical Architects on enterprise HLS accounts and
-serves as Tech Exec on named accounts. Launched and operationalized the team that owns
-customer POC success for Agentforce and Data 360.
+**Director, Technical Architects, Healthcare
+& Life Sciences at Salesforce** (Jun 2022 – Aug 2026, prev. Senior Manager), leading a team of
+10 Technical Architects on enterprise HLS accounts and serving as Tech Exec on named accounts.
+Launched and operationalized the team that owned customer POC success for Agentforce and Data
+360.
 
-**In process (not settled):** interviewing internally for a Portfolio Leader role leading a
-team of Forward Deployed Engineers. Panel Monday, August 17, 2026. **Do not state this as a
-current or confirmed role** in a bio, cover letter, or application.
+> ⚠️ **Her Salesforce role ended in August 2026 — write it in the past tense.** Do not describe
+> her as currently at Salesforce in a bio, resume, cover letter, or profile. Circumstances and
+> the exact separation date are in `job/` and are not needed for any of those.
+
+No new role is settled yet; never state a prospective role as held.
 
 ## The shape of the career
 
