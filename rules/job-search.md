@@ -64,6 +64,12 @@ and it gets edited quietly — a JD that gains or loses a hard requirement betwe
 the offer is evidence, and you only have it if you kept both. Postings also disappear once the
 req closes.
 
+**`transcripts/` is for calls with the company. A call with a third party *about* a company goes
+in that company's `research/`** — a friend at a competitor briefing Anna on the market is
+research, not a candidate conversation, and filing it as a transcript would imply contact that
+never happened. When one conversation carries facts about two companies, split it: the record
+goes where its subject is, and the other company's folder gets the part that belongs to it.
+
 Folders are per **company**, not per requisition. A company can have three separate entries in
 the tracker and still be one relationship, and a transcript belongs to the relationship.
 Create new ones with `python3 scripts/job_scaffold.py` (idempotent; never overwrites an
