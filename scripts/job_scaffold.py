@@ -16,15 +16,14 @@ Everything it writes lives under job/, which is gitignored.
 """
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from tracker_to_md import DEFAULT_IN, block, parse  # noqa: E402
-
 REPO = Path(__file__).resolve().parent.parent
 JOB = REPO / "job"
+DATA = JOB / "pipeline.json"
 COMPANIES = JOB / "companies"
 INBOX = JOB / "inbox"
 
@@ -92,13 +91,13 @@ def main() -> int:
     args = ap.parse_args()
     wanted = {s.strip() for s in args.stages.split(",") if s.strip()}
 
-    if not DEFAULT_IN.exists():
-        print(f"no tracker at {DEFAULT_IN}", file=sys.stderr)
+    if not DATA.exists():
+        print(f"no pipeline data at {DATA}", file=sys.stderr)
         return 1
 
-    html = DEFAULT_IN.read_text(encoding="utf-8")
-    labels = {s["key"]: s["label"] for s in parse(block(html, "STAGES"))}
-    entries = [e for e in parse(block(html, "SEED")) if e.get("stage") in wanted]
+    data = json.loads(DATA.read_text(encoding="utf-8"))
+    labels = {s["key"]: s["label"] for s in data["stages"]}
+    entries = [e for e in data["entries"] if e.get("stage") in wanted]
 
     grouped: dict[str, list[dict]] = {}
     names: dict[str, str] = {}
