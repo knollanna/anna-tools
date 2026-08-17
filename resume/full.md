@@ -30,8 +30,12 @@ discovery, solution design, and deployment across regulated industries.
 
 ## Professional experience
 
-### Salesforce — North America · Jun 2022 – Present
+### Salesforce — North America · Jun 2022 – Aug 2026
 **Director, Technical Architects, Healthcare & Life Sciences** (prev. Senior Manager)
+
+> **Ended August 2026.** The PDF this file tracks still reads "Present" — it predates the
+> change. **Confirm the official separation date before putting a month on a resume**, since a
+> notification date and a separation date are not always the same.
 
 - Lead a team of 10 Technical Architects delivering industry-specific solutions to enterprise
   HLS accounts; serve as Tech Exec on accounts including McKesson, Pfizer, Regeneron, and HCSC
