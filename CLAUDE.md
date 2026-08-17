@@ -51,7 +51,8 @@ anna-tools/
 │   ├── session_init.py        SessionStart: where am I, which rules apply
 │   └── job_context_nudge.py   UserPromptSubmit: surfaces the job rule on a match
 ├── scripts/
-│   └── tracker_to_md.py       tracker HTML -> greppable markdown
+│   ├── tracker_to_md.py       tracker HTML -> greppable markdown
+│   └── job_scaffold.py        one folder per active company, from the tracker
 └── job/               🔒 GITIGNORED. Never commit, publish, or put in an artifact.
 ```
 
