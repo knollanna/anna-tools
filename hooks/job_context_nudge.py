@@ -51,6 +51,13 @@ SIGNALS = re.compile(
 
 # "Notch (notch.cx)" -> "Notch"; "Cursor (Anysphere)" -> "Cursor".
 PARENTHETICAL = re.compile(r"\s*\([^)]*\)\s*$")
+NONWORD = re.compile(r"[^a-z0-9]+")
+
+
+def slugify(company: str) -> str:
+    """Must match scripts/job_scaffold.py, or the hook points at folders that
+    do not exist."""
+    return NONWORD.sub("-", PARENTHETICAL.sub("", company).strip().lower()).strip("-")
 
 MAX_COMPANIES = 200
 
@@ -124,6 +131,24 @@ def main() -> int:
     if hits:
         lines.append(f"- Already in the pipeline: {', '.join(hits)}. Read the existing entry "
                      "before writing a new one, and never merge details across companies.")
+        for name in hits:
+            folder = JOB / "companies" / slugify(name)
+            if folder.is_dir():
+                lines.append(
+                    f"  - **{name} has a folder: `{folder}`.** Read its `README.md` first; "
+                    "it is the source of truth for this company. New transcripts go in "
+                    "`transcripts/` as `YYYY-MM-DD-who.md`, research in `research/` so it "
+                    "stops dying in chat sessions."
+                )
+
+    pending = sorted(p for p in (JOB / "inbox").glob("*.md") if p.name != "README.md")
+    if pending:
+        names = ", ".join(p.name for p in pending[:5])
+        lines.append(
+            f"- 📥 {len(pending)} unfiled item(s) in `{JOB / 'inbox'}`: {names}. "
+            "Offer to file them into the right company folder."
+        )
+
     if stale:
         lines.append(stale)
 

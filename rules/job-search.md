@@ -19,12 +19,50 @@ names, and status are not. Don't copy them up here.
 
 | File | What it is | Edited how |
 | --- | --- | --- |
-| `job/Anna_Job_Search_Context.md` | The orienting doc. Background, criteria, full pipeline, talking points, company quick reference. | By hand, in place |
-| `job/job_search_tracker.html` | The interactive pipeline artifact. Source of truth for stage and status. | Regenerated as an artifact |
+| `job/Anna_Job_Search_Context.md` | The orienting doc. Background, criteria, pipeline, talking points. | By hand, in place |
+| `job/job_search_tracker.html` | The interactive pipeline artifact. Source of truth for **stage**. | Regenerated as an artifact |
 | `job/tracker.md` | Greppable markdown of the tracker. | `python3 scripts/tracker_to_md.py` — never by hand |
+| `job/companies/<slug>/` | One folder per active company. **Source of truth for that company.** | By hand and by session |
+| `job/inbox/` | Drop point for unfiled captures. | Anna pastes; a session files them |
 
-Read `job/Anna_Job_Search_Context.md` before answering anything about the search. It is long;
-read it anyway. Working from a partial view is how companies get blended.
+### Inside a company folder
+
+```
+companies/<slug>/
+├── README.md                 the standing picture: where it stands, what I know, open questions
+├── transcripts/YYYY-MM-DD-who.md
+├── prep/YYYY-MM-DD-panel-prompt.md
+└── research/funding-and-customers.md
+```
+
+Folders are per **company**, not per requisition. A company can have three separate entries in
+the tracker and still be one relationship, and a transcript belongs to the relationship.
+Create new ones with `python3 scripts/job_scaffold.py` (idempotent; never overwrites an
+existing README).
+
+Read the company's `README.md` before answering anything about that company, and the orienting
+doc for anything about the search as a whole. Working from a partial view is how companies get
+blended.
+
+### Transcripts
+
+- Filename `YYYY-MM-DD-who.md`, e.g. `2026-08-11-first-last.md`. Date first so it sorts.
+  Lowercase, hyphens.
+- **Summary at the top, raw verbatim at the bottom.** Anyone reading usually wants the three
+  bullets; the raw is there for when the exact words matter. Never edit the raw.
+- Granola encrypts its local store (`granola.db` has no SQLite header, the cache is `.enc`), so
+  there is no automated export. Anna copies from the UI — either pasting into a session, or
+  dropping a file in `job/inbox/`.
+- Paste both Granola panes under `## Granola notes` and `## Raw`. The summary is Granola's
+  interpretation; the raw is the ground truth and they are not interchangeable.
+- **Anna does not write the summary.** She captures; the session summarizes against this rule.
+
+### The inbox
+
+Anything in `job/inbox/` is unfiled. The `job_context_nudge` hook reports the count on any
+job-related prompt. Offer to file them: move into the right `companies/<slug>/transcripts/`,
+add frontmatter and a summary, update the company README and the tracker. An empty inbox is
+the goal.
 
 ## When to update
 
