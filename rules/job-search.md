@@ -30,10 +30,17 @@ names, and status are not. Don't copy them up here.
 ```
 companies/<slug>/
 ├── README.md                 the standing picture: where it stands, what I know, open questions
+├── jd/YYYY-MM-DD-role.md     the posting or req text, every version
 ├── transcripts/YYYY-MM-DD-who.md
 ├── prep/YYYY-MM-DD-panel-prompt.md
 └── research/funding-and-customers.md
 ```
+
+**Save the JD the day it arrives, and keep every version.** A posting is the only written
+statement of what the company says it wants, it is what an application gets measured against,
+and it gets edited quietly — a JD that gains or loses a hard requirement between the screen and
+the offer is evidence, and you only have it if you kept both. Postings also disappear once the
+req closes.
 
 Folders are per **company**, not per requisition. A company can have three separate entries in
 the tracker and still be one relationship, and a transcript belongs to the relationship.
