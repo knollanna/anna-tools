@@ -74,8 +74,10 @@ def readme(company: str, entries: list[dict], labels: dict) -> str:
         "",
         "## Files",
         "",
+        "- `jd/` — job descriptions and req text, `YYYY-MM-DD-role.md`. Keep every version;",
+        "  JDs get edited quietly and the diff is evidence.",
         "- `transcripts/` — one file per call, `YYYY-MM-DD-who.md`, raw kept verbatim",
-        "- `prep/` — prep docs, panel prompts, anything they sent",
+        "- `prep/` — prep docs, panel prompts, recruiter correspondence, anything they sent",
         "- `research/` — company research, so it stops dying in chat sessions",
         "",
     ]
@@ -115,7 +117,7 @@ def main() -> int:
         if args.dry_run:
             print(f"would create {base}/ ({len(rows)} entr{'y' if len(rows)==1 else 'ies'})")
             continue
-        for sub in ("transcripts", "prep", "research"):
+        for sub in ("jd", "transcripts", "prep", "research"):
             (base / sub).mkdir(parents=True, exist_ok=True)
         if target.exists():
             skipped.append(slug)
