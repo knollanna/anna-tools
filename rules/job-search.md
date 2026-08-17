@@ -17,13 +17,35 @@ names, and status are not. Don't copy them up here.
 
 ## The files
 
+**One fact, one home.** Every piece of information has exactly one place it is written, and
+everything else is either generated from it or points at it. When the same fact lived in four
+files, a declined company sat at "interviewing" for a week and a misspelled name survived three
+corrections. That is the failure this layout exists to prevent.
+
 | File | What it is | Edited how |
 | --- | --- | --- |
-| `job/Anna_Job_Search_Context.md` | The orienting doc. Background, criteria, pipeline, talking points. | By hand, in place |
-| `job/job_search_tracker.html` | The interactive pipeline artifact. Source of truth for **stage**. | Regenerated as an artifact |
-| `job/tracker.md` | Greppable markdown of the tracker. | `python3 scripts/tracker_to_md.py` — never by hand |
-| `job/companies/<slug>/` | One folder per active company. **Source of truth for that company.** | By hand and by session |
+| `job/pipeline.json` | **Source of truth for stage** and the standing note on every company. | By hand or by a session |
+| `job/companies/<slug>/` | One folder per active company. **Source of truth for everything else about that company.** | By hand and by session |
+| `job/Anna_Job_Search_Context.md` | The orienting doc: background, criteria, talking points. | By hand, in place |
 | `job/inbox/` | Drop point for unfiled captures. | Anna pastes; a session files them |
+| `job/tracker.md` | Greppable pipeline. **Generated.** | `python3 scripts/board.py` |
+| `job/board.html` | Visual kanban board. **Generated.** | `python3 scripts/board.py` |
+
+**Never hand-edit `tracker.md` or `board.html`.** They are outputs; the next run overwrites
+them. `python3 scripts/board.py --check` reports whether they are current, and the
+`job_context_nudge` hook warns when `pipeline.json` is newer than its views.
+
+`job/archive/` holds the original hand-maintained HTML tracker. It is not live and nothing
+reads it.
+
+### When a stage changes
+
+1. Update `stage` in `pipeline.json` (and the `note`, so the board reads usefully).
+2. Update the company's `README.md` if it has a folder — the *why* lives there, not in the
+   board note.
+3. Run `python3 scripts/board.py`.
+
+That is the whole ritual. There is no separate tracker to maintain.
 
 ### Inside a company folder
 

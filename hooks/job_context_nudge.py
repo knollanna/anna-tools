@@ -30,8 +30,9 @@ import _lib  # noqa: E402
 JOB = _lib.data_home() / "job"
 CONTEXT = JOB / "Anna_Job_Search_Context.md"
 TRACKER_MD = JOB / "tracker.md"
-TRACKER_HTML = JOB / "job_search_tracker.html"
+PIPELINE = JOB / "pipeline.json"
 RULE = _lib.plugin_root() / "rules" / "job-search.md"
+BOARD = _lib.plugin_root() / "scripts" / "board.py"
 
 # Phrases that mean "this is about the search" on their own.
 SIGNALS = re.compile(
@@ -107,13 +108,14 @@ def main() -> int:
     if not (SIGNALS.search(prompt) or hits):
         return 0
 
+    # pipeline.json is the only place a stage is written; the two views are
+    # generated. If the data is newer than a view, the view is lying.
     stale = ""
-    if TRACKER_HTML.exists() and TRACKER_MD.exists():
-        if TRACKER_HTML.stat().st_mtime > TRACKER_MD.stat().st_mtime:
+    if PIPELINE.exists() and TRACKER_MD.exists():
+        if PIPELINE.stat().st_mtime > TRACKER_MD.stat().st_mtime:
             stale = (
-                f"- ⚠️ `{TRACKER_HTML}` is newer than the markdown. Run "
-                f"`python3 {_lib.plugin_root() / 'scripts' / 'tracker_to_md.py'}` "
-                "before relying on it."
+                f"- ⚠️ `pipeline.json` is newer than the generated views. Run "
+                f"`python3 {BOARD}` before relying on `tracker.md` or `board.html`."
             )
 
     # Absolute paths throughout: this fires in any repo, where a relative path
