@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Create one folder per active company from the pipeline tracker.
 
-Folders are per *company*, not per requisition: Cresta has three entries in the
-tracker and one relationship, and a transcript belongs to the relationship. Each
-folder gets a README seeded from the tracker so it opens with real content
-instead of being an empty directory nobody fills.
+Folders are per *company*, not per requisition. One relationship can have several
+entries in the tracker, and a transcript belongs to the relationship rather than
+to a req. Each folder gets a README seeded from the tracker so it opens with real
+content instead of being an empty directory nobody fills.
 
 Idempotent. Never overwrites a README that already exists — the seeded version is
 a starting point that Anna and later sessions edit, and clobbering it on a re-run

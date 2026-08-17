@@ -49,7 +49,8 @@ SIGNALS = re.compile(
     re.I | re.X,
 )
 
-# "Notch (notch.cx)" -> "Notch"; "Cursor (Anysphere)" -> "Cursor".
+# Strip a trailing parenthetical so a heading like "Name (domain.com)" still
+# matches a bare mention of "Name" in a prompt.
 PARENTHETICAL = re.compile(r"\s*\([^)]*\)\s*$")
 NONWORD = re.compile(r"[^a-z0-9]+")
 
@@ -78,7 +79,8 @@ def companies() -> set[str]:
 
 
 def matched_companies(prompt: str) -> list[str]:
-    """Single-word names match case-sensitively — "Notch" should not fire on "top-notch"."""
+    """Single-word names match case-sensitively, so a short company name that is also a
+    common English word does not fire on every casual use of that word."""
     hits = []
     for name in companies():
         flags = 0 if " " not in name else re.I
