@@ -64,8 +64,8 @@ def readme(company: str, entries: list[dict], labels: dict) -> str:
         "",
     ]
     for e in entries:
-        if e.get("notes"):
-            lines += [f"### {e.get('role', '?')}", "", e["notes"], ""]
+        if e.get("note") or e.get("notes"):
+            lines += [f"### {e.get('role', '?')}", "", e.get("note") or e.get("notes", ""), ""]
     lines += [
         "## Open questions",
         "",
