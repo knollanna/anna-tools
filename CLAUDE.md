@@ -16,6 +16,9 @@ annoys her twice, not before.
   **Her own career history is hers**, so `resume/` carries employers, titles, dates, and the
   account names that appear on her own resume. That is the line: a fact she publishes about
   herself is in scope; anything she learned by working somewhere is not.
+- **Check a provider's terms before building against them, not after.** An access barrier — a
+  CSRF token, a private endpoint, bot detection — is the provider saying no, not a puzzle to
+  solve. See `rules/data-sources.md`.
 - **No secrets, no `.env` contents, no API keys** — not in rules, not in examples, not in a
   comment "just for now". FareWatch and JobWatch both keep live `.env` files; never copy a
   value out of one into this repo.
@@ -40,6 +43,7 @@ anna-tools/
 │   ├── design-system.md   the quality bar for anything with a UI
 │   ├── writing.md         voice, and the LLM tells to cut
 │   ├── github.md          branches, commits, what gets reviewed
+│   ├── data-sources.md    check the terms before building against a third party
 │   └── job-search.md      how to maintain the pipeline files
 ├── resume/
 │   ├── summary.md         short, always loaded
@@ -100,8 +104,8 @@ Current selection:
 | Project | Profile | Rules |
 | --- | --- | --- |
 | annaknoll-site | `static-site` | design-system (profile), github (found `.git`), writing (always) |
-| farewatch | `python-service` | design-system (found `*.html`), github, writing |
-| jobwatch | `python-service` | github, writing |
+| farewatch | `python-service` | data-sources (profile), design-system (found `*.html`), github, writing |
+| jobwatch | `python-service` | data-sources (profile + found `*_source.py`), github, writing |
 | anna-tools | `tooling` | job-search (profile), design-system, github, writing |
 
 To work on the plugin itself without the installed copy interfering:
@@ -123,6 +127,7 @@ invisible because the hook just goes quiet.
 | `rules/writing.md` | Before writing anything Anna will publish, commit, or read. Effectively always. |
 | `rules/design-system.md` | Before touching CSS, color, type, or markup in any project with a UI |
 | `rules/github.md` | Before branching, committing, opening a PR, or pushing |
+| `rules/data-sources.md` | Before adding or changing any third-party data source in FareWatch or JobWatch. Check the terms *first*. |
 | `rules/job-search.md` | Any interview, transcript, recruiter call, application, or pipeline change. The `job_context_nudge` hook points here automatically. |
 
 ## Resume (read on demand)
