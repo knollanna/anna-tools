@@ -22,7 +22,19 @@ an unrelated project would make the hue signal noise.
 | To check a ratio | `python3 annaknoll-site/tools/ramps.py` prints the full audit |
 
 FareWatch and JobWatch run their own unrelated palettes. That is fine and they are not being
-retrofitted. The rules below still apply to them.
+retrofitted wholesale. The rules below still apply to them.
+
+**One deliberate exception, added 2026-08-18.** FareWatch's public client page —
+`/client/<token>`, and only that page — does use the annaknoll green. It stopped being a
+private tool the moment it became the last screen of a funnel that starts on
+annaknoll.com/travel: someone fills in the form there, then lands on something that looks
+like a different company. The hue rule argues *for* this rather than against it, because a
+fare watch for a travel client is travel craft, which is what green means.
+
+The scope is the exception. It is `.client-theme` on `<body>`, not `:root`. FareWatch's admin
+dashboard keeps its own look, because nobody but Anna sees it. **A shared palette is warranted
+when one product is visibly the continuation of another. It is not warranted because two
+things happen to belong to the same person.**
 
 ## The accessibility contract
 
