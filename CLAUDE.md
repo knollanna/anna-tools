@@ -39,6 +39,9 @@ anna-tools/
 │   └── marketplace.json   local marketplace so it installs at user scope
 ├── CLAUDE.md          this file
 ├── projects.json      the catalog: what exists, where, what state it's in
+├── profiles.json      valid project archetypes, catches drift
+├── docs/
+│   └── plugin-architecture.html   the shared-vs-personal seam, explained
 ├── rules/
 │   ├── design-system.md   the quality bar for anything with a UI
 │   ├── writing.md         voice, and the LLM tells to cut
@@ -184,7 +187,7 @@ Anna actually needs it.**
 | Piece | Status |
 | --- | --- |
 | Hook (`job_context_nudge.py`) | **Built.** Anna asked for a guarantee, not a habit — a prose rule that only works when someone remembers to read it is the case a hook exists for. |
-| Script (`tracker_to_md.py`) | **Built.** Converting 60 JS objects to markdown by hand is the definition of work a model should not be doing. |
+| Script (`board.py`) | **Built.** Converting 60 JS objects to markdown by hand is the definition of work a model should not be doing. |
 | Skills (`/tailor-resume`, `/new-post`) | Not yet. Write one the second time you explain the same process. `/tailor-resume` is the obvious first candidate. |
 | Agents | Not yet. Add when a task reliably burns your context reading files. |
 | A plugin manifest / installer | Not yet. Add when more than one machine or more than one person needs this. |
