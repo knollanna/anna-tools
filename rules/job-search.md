@@ -141,7 +141,8 @@ Match the existing house style. It is dense on purpose and it works.
 - **Don't drop history.** Entries accumulate. A stage change appends; it does not erase what
   came before. The record of how a process went is the value.
 - **Keep the tracker and the context doc consistent.** If a stage changes in one, change it in
-  the other. After the HTML tracker is regenerated, re-run `scripts/tracker_to_md.py`.
+  the other. `scripts/board.py` regenerates both `tracker.md` and `board.html` from
+  `pipeline.json` in a single run — there is no separate step for the markdown tracker.
 - **Never put job-search detail in a tracked file**, in `resume/`, on annaknoll.com, or in any
   artifact. The site rule "keep private job-search details off the page" applies everywhere.
 
