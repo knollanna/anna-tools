@@ -183,7 +183,7 @@ Sourced from Anna directly or from shipped copy on annaknoll.com.
   to build custom in Salesforce. Real, professional Salesforce work; frame as co-designed, not
   built solo.
 - **Neo4j / knowledge graphs:** self-directed research, not professional/production experience —
-  dug into Neo4j while prepping for a prior application to Acrete, which needed knowledge-graph
+  dug into Neo4j while prepping for a prior application to Accrete, which needed knowledge-graph
   familiarity. Also experimented with Neo4j's MCP (Model Context Protocol) server, connecting it
   to Claude. Real and recent, but independent study, not a work history line. Frame it as that
   precisely if it comes up — don't let it inflate into claimed hands-on production experience.
