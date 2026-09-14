@@ -15,8 +15,9 @@ for near-misses ("Head of Solutions Consulting" vs "Head of Solutions
 Engineering"). Suggestions only — nothing is auto-applied. Approving one means
 adding it to jobwatch/config.py by hand.
 
-Only active-stage entries (applied/considering/outreach/warm/followup) are
-checked; a title from a dead lead isn't worth chasing.
+Only open-stage entries (job/pipeline.json's stages minus lost/dropped/
+noresponse — see _neo4j.OPEN_STAGES) are checked; a title from a dead lead
+isn't worth chasing.
 
 Writes candidates to job/title_match_candidates.json for review.
 
@@ -24,33 +25,24 @@ Writes candidates to job/title_match_candidates.json for review.
 """
 
 import argparse
-import ast
 import json
-from pathlib import Path
 
 from rapidfuzz import fuzz
 
-from _neo4j import REPO
+from _neo4j import OPEN_STAGES, REPO, load_jobwatch_config_names
 
 PIPELINE = REPO / "job" / "pipeline.json"
-JOBWATCH_CONFIG = REPO.parent / "jobwatch" / "config.py"
 CANDIDATES_OUT = REPO / "job" / "title_match_candidates.json"
 
-ACTIVE_STAGES = {"applied", "considering", "outreach", "warm", "followup"}
+# Below this length, a substring hit is as likely to be a coincidence (a
+# short acronym like "AI" or "SE" appearing inside an unrelated title) as a
+# real match - fall through to the fuzzy pass instead of trusting it outright.
+MIN_SUBSTRING_LEN = 6
 
 
 def load_jobwatch_phrases() -> list[str]:
-    """Pull ADZUNA_PHRASES + ATS_TITLE_KEYWORDS out of jobwatch/config.py
-    without importing it (keeps this script out of JobWatch's own venv/deps)."""
-    tree = ast.parse(JOBWATCH_CONFIG.read_text(encoding="utf-8"))
-    phrases = []
-    wanted = {"ADZUNA_PHRASES", "ATS_TITLE_KEYWORDS"}
-    for node in tree.body:
-        if isinstance(node, ast.Assign) and len(node.targets) == 1:
-            target = node.targets[0]
-            if isinstance(target, ast.Name) and target.id in wanted:
-                phrases.extend(ast.literal_eval(node.value))
-    return phrases
+    config = load_jobwatch_config_names("ADZUNA_PHRASES", "ATS_TITLE_KEYWORDS")
+    return [*config["ADZUNA_PHRASES"], *config["ATS_TITLE_KEYWORDS"]]
 
 
 def load_pipeline_titles() -> list[str]:
@@ -58,7 +50,7 @@ def load_pipeline_titles() -> list[str]:
     titles = {
         e["role"].strip()
         for e in entries
-        if e.get("stage") in ACTIVE_STAGES and e.get("role", "").strip()
+        if e.get("stage") in OPEN_STAGES and e.get("role", "").strip()
     }
     return sorted(titles)
 
@@ -66,7 +58,9 @@ def load_pipeline_titles() -> list[str]:
 def is_covered(title: str, phrases: list[str], threshold: int) -> tuple[bool, str | None]:
     t = title.lower()
     for phrase in phrases:
-        if phrase.lower() in t or t in phrase.lower():
+        p = phrase.lower()
+        shorter, longer = (p, t) if len(p) <= len(t) else (t, p)
+        if len(shorter) >= MIN_SUBSTRING_LEN and shorter in longer:
             return True, phrase
     best_phrase, best_score = None, 0
     for phrase in phrases:
@@ -94,7 +88,7 @@ def main():
 
     CANDIDATES_OUT.write_text(json.dumps(candidates, indent=2) + "\n")
 
-    print(f"{len(titles)} active-stage pipeline titles checked against "
+    print(f"{len(titles)} open-stage pipeline titles checked against "
           f"{len(phrases)} JobWatch phrases/keywords.")
     print(f"{len(candidates)} uncovered, written to {CANDIDATES_OUT.relative_to(REPO)}\n")
     for c in candidates:
