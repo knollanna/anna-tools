@@ -54,6 +54,14 @@ def find_company(session, query: str, threshold: int = 85) -> list[dict]:
     return [{"name": n, "score": round(s, 1)} for n, s in scored]
 
 
+def is_exact_match(matches: list[dict]) -> bool:
+    """True when find_company() resolved to exactly one unambiguous match
+    (score 100) - safe to use without asking a human to disambiguate. Shared
+    by every script that resolves a typed/pipeline company name against the
+    graph, so the definition of "exact" can't drift between them."""
+    return len(matches) == 1 and matches[0]["score"] >= 100
+
+
 def load_env() -> dict:
     env = {}
     for line in ENV.read_text(encoding="utf-8").splitlines():
