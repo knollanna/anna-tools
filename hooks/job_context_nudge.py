@@ -35,8 +35,11 @@ PIPELINE = JOB / "pipeline.json"
 RULE = _lib.plugin_root() / "rules" / "job-search.md"
 BOARD = _lib.plugin_root() / "scripts" / "board.py"
 OBJECTION_REPORT = _lib.plugin_root() / "scripts" / "objection_report.py"
+WARM_PATH = _lib.plugin_root() / "scripts" / "warm_path.py"
+HUMAN_PATH_REPORT = _lib.plugin_root() / "scripts" / "human_path_report.py"
 
 CLOSED_STAGES = {"lost", "dropped", "noresponse"}
+GATED_STAGES = {"considering", "outreach"}
 
 # Phrases that mean "this is about the search" on their own.
 SIGNALS = re.compile(
@@ -103,20 +106,49 @@ def last_updated() -> str:
     return "unknown"
 
 
+def pipeline_entries() -> list[dict]:
+    if not PIPELINE.exists():
+        return []
+    try:
+        data = json.loads(PIPELINE.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    return data.get("entries", [])
+
+
 def unclassified_closed_count() -> int:
     """Closed entries (lost/dropped/noresponse) with no `objection` field yet.
     Mirrors the inbox count below: a count computed here fires on every relevant
     prompt, so it can't be forgotten the way a prose reminder can."""
-    if not PIPELINE.exists():
-        return 0
-    try:
-        data = json.loads(PIPELINE.read_text(encoding="utf-8"))
-    except Exception:
-        return 0
     return sum(
-        1 for e in data.get("entries", [])
+        1 for e in pipeline_entries()
         if e.get("stage") in CLOSED_STAGES and not e.get("objection")
     )
+
+
+def pending_human_path_count() -> int:
+    """considering/outreach entries with no `human_path` logged yet. Same shape
+    as unclassified_closed_count: a count that fires on every relevant prompt
+    so the warm-path check isn't something a session has to remember to run."""
+    return sum(
+        1 for e in pipeline_entries()
+        if e.get("stage") in GATED_STAGES and not e.get("human_path")
+    )
+
+
+def gated_hits_missing_human_path(hits: list[str]) -> list[tuple[str, str]]:
+    """(company, stage) for each hit that's at a gated stage with no human_path
+    logged — the targeted warning, fired exactly when a company is named and
+    about to be acted on rather than buried in the global count above."""
+    found = []
+    for e in pipeline_entries():
+        if (
+            e.get("company") in hits
+            and e.get("stage") in GATED_STAGES
+            and not e.get("human_path")
+        ):
+            found.append((e["company"], e["stage"]))
+    return found
 
 
 def main() -> int:
@@ -164,6 +196,12 @@ def main() -> int:
                     "`transcripts/` as `YYYY-MM-DD-who.md`, research in `research/` so it "
                     "stops dying in chat sessions."
                 )
+        for company, stage in gated_hits_missing_human_path(hits):
+            lines.append(
+                f"  - ⚠️ {company} is at `{stage}` with no warm-path check logged. Run "
+                f"`python3 {WARM_PATH} \"{company}\"` (and check for alumni overlap or a named "
+                "hiring manager/recruiter by hand) before applying."
+            )
 
     pending = sorted(p for p in (JOB / "inbox").glob("*.md") if p.name != "README.md")
     if pending:
@@ -178,6 +216,14 @@ def main() -> int:
         lines.append(
             f"- 🏷️ {unclassified} closed entr{'y has' if unclassified == 1 else 'ies have'} no "
             f"objection classification yet. Run `python3 {OBJECTION_REPORT}` to see suggestions."
+        )
+
+    pending_warm = pending_human_path_count()
+    if pending_warm:
+        lines.append(
+            f"- 🤝 {pending_warm} `considering`/`outreach` entr{'y has' if pending_warm == 1 else 'ies have'} "
+            f"no warm-path check logged. Run `python3 {HUMAN_PATH_REPORT}` to see who's still "
+            "unchecked before any of them move to `applied`."
         )
 
     if stale:
