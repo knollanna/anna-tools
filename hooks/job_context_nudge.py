@@ -40,6 +40,7 @@ HUMAN_PATH_REPORT = _lib.plugin_root() / "scripts" / "human_path_report.py"
 
 CLOSED_STAGES = {"lost", "dropped", "noresponse"}
 GATED_STAGES = {"considering", "outreach"}
+ACTIVE_STAGES = {"considering", "outreach", "applied", "warm", "followup"}
 
 # Phrases that mean "this is about the search" on their own.
 SIGNALS = re.compile(
@@ -163,6 +164,49 @@ def gated_hits_missing_human_path(entries: list[dict], hits: list[str]) -> list[
     return sorted(by_company.items())
 
 
+def pending_outreach_count(entries: list[dict]) -> int:
+    """Entries with a real human_path (best_rung not "none") whose outreach
+    is still unset - a found lead nobody's used yet. Broader stage scope than
+    pending_human_path_count: a warm contact found after applying is still
+    worth using, so this covers every non-closed stage, not just the
+    pre-applied gate."""
+    return sum(
+        1 for e in entries
+        if e.get("stage") in ACTIVE_STAGES
+        and (hp := e.get("human_path"))
+        and hp.get("best_rung") not in (None, "none")
+        and not hp.get("outreach")
+    )
+
+
+def gated_hits_pending_outreach(entries: list[dict], hits: list[str]) -> list[tuple[str, str, str]]:
+    """(company, kind, summary) for each hit with a found human_path whose
+    outreach is "pending" (never actioned) or "skipped" (a deliberate pass -
+    worth another warm-path pass for a stronger lead, not a repeat nudge to
+    contact someone already declined). A contacted entry (outreach holds a
+    date) is done and returns nothing.
+
+    Same parenthetical-stripping as gated_hits_missing_human_path - a pipeline
+    entry's raw `company` field can carry a trailing parenthetical that hits
+    (from matched_companies()) never will."""
+    found = []
+    for e in entries:
+        if e.get("stage") not in ACTIVE_STAGES:
+            continue
+        hp = e.get("human_path")
+        if not hp or hp.get("best_rung") in (None, "none"):
+            continue
+        outreach = hp.get("outreach")
+        if outreach and outreach != "skipped":
+            continue  # a date string - already contacted, nothing to nudge
+        company = e.get("company", "")
+        stripped = PARENTHETICAL.sub("", company).strip()
+        if stripped in hits:
+            kind = "skipped" if outreach == "skipped" else "pending"
+            found.append((company, kind, hp.get("summary", "")))
+    return found
+
+
 def main() -> int:
     prompt = str(_lib.payload().get("prompt", ""))
     if not prompt or not JOB.is_dir():
@@ -220,6 +264,18 @@ def main() -> int:
                 f"`python3 {WARM_PATH} \"{company}\"` (and check for alumni overlap or a named "
                 "hiring manager/recruiter by hand) before applying."
             )
+        for company, kind, summary in gated_hits_pending_outreach(entries, hits):
+            if kind == "pending":
+                lines.append(
+                    f"  - 📨 {company}: warm path found ({summary}) but not yet contacted. "
+                    "Reach out, or note here if you have."
+                )
+            else:
+                lines.append(
+                    f"  - 🔁 {company}: the warm path found ({summary}) was skipped. Worth "
+                    "another warm-path pass (alumni overlap or a named contact) for a "
+                    "stronger lead?"
+                )
 
     pending = sorted(p for p in (JOB / "inbox").glob("*.md") if p.name != "README.md")
     if pending:
@@ -242,6 +298,13 @@ def main() -> int:
             f"- 🤝 {pending_warm} `considering`/`outreach` entr{'y has' if pending_warm == 1 else 'ies have'} "
             f"no warm-path check logged. Run `python3 {HUMAN_PATH_REPORT}` to see who's still "
             "unchecked before any of them move to `applied`."
+        )
+
+    pending_outreach = pending_outreach_count(entries)
+    if pending_outreach:
+        lines.append(
+            f"- 📨 {pending_outreach} entr{'y has' if pending_outreach == 1 else 'ies have'} a "
+            "warm path found but not yet contacted."
         )
 
     if stale:

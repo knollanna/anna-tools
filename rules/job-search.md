@@ -186,6 +186,13 @@ it's still correct to apply cold — but the field records that the question was
 actually asked. An absent `human_path` means *unchecked*, not *checked, nothing
 found*; don't leave it off once a check has run.
 
+`best_rung` can also be `"mutual-connection"` — a 2nd-degree LinkedIn lead
+surfaced via LinkedIn's own "mutual connections" widget on someone's profile,
+where the mutual is a person Anna already knows well (a pipeline contact or
+1st-degree connection), not something the graph query finds on its own.
+Confirm with Anna which company the profile is actually at before logging it —
+a title alone (e.g. "Product Manager, AI Platforms") is never enough.
+
 `python3 scripts/warm_path.py "<Company>"` answers rungs 1-2 (pipeline contacts,
 direct LinkedIn connections) from the Neo4j graph. Alumni overlap and naming a
 hiring manager or recruiter (rungs 3-4) need a manual/WebSearch pass — the graph
@@ -194,10 +201,31 @@ proposes from judgment rather than a query result. Never invent `summary` or
 `best_rung`; mark `"none"` honestly rather than guessing at a path that wasn't
 actually found.
 
+### Outreach status
+
+Once `best_rung` isn't `"none"`, `human_path` can also carry `outreach` —
+tri-state, tracking whether the found lead actually got used:
+
+- absent / `null` — pending, nobody's reached out yet.
+- a date string (`"2026-09-16"`) — Anna reported contacting them.
+- `"skipped"` — Anna deliberately decided not to use this lead (too weak,
+  bad timing); the reason goes in `human_path.note`.
+
+Set this from what Anna actually reports, same as everything else here —
+never mark a lead contacted or skipped without her saying so. A found lead
+is worth using at any live stage, not just before applying: `outreach`
+applies through `considering`/`outreach`/`applied`/`warm`/`followup` alike,
+wider than the `human_path` gate itself, since a warm contact found after
+applying can still help get noticed or get a referral into the process.
+
 `job_context_nudge.py` flags a named company that's at a gated stage with no
 `human_path` yet, and separately reports how many `considering`/`outreach`
 entries overall are still unchecked — `python3 scripts/human_path_report.py`
-lists them and runs the graph query for each.
+lists them and runs the graph query for each. It also flags a named company
+with a found-but-`outreach`-pending lead ("reach out"), and one whose lead
+was `"skipped"` (a different nudge — worth another pass for a stronger lead,
+not a repeat push to contact someone already declined) — plus a matching
+global count for pending outreach across every active-stage entry.
 
 ## Standing context
 
