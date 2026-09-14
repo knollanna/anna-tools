@@ -222,7 +222,11 @@ applying can still help get noticed or get a referral into the process.
 `job_context_nudge.py` flags a named company that's at a gated stage with no
 `human_path` yet, and separately reports how many `considering`/`outreach`
 entries overall are still unchecked — `python3 scripts/human_path_report.py`
-lists them and runs the graph query for each.
+lists them and runs the graph query for each. It also flags a named company
+with a found-but-`outreach`-pending lead ("reach out"), and one whose lead
+was `"skipped"` (a different nudge — worth another pass for a stronger lead,
+not a repeat push to contact someone already declined) — plus a matching
+global count for pending outreach across every active-stage entry.
 
 ## JobWatch integration
 
@@ -248,11 +252,7 @@ advisory except the sync — nothing here writes back into `pipeline.json` or
   list, don't paste it wholesale into `jobwatch/config.py`.
 - **`python3 scripts/ats_coverage_report.py`** — lists active-stage pipeline
   companies missing from JobWatch's `ATS_BOARDS`. No token lookup, no
-  candidates file — just the gap, for a manual/WebSearch pass per company. It also flags a named company
-with a found-but-`outreach`-pending lead ("reach out"), and one whose lead
-was `"skipped"` (a different nudge — worth another pass for a stronger lead,
-not a repeat push to contact someone already declined) — plus a matching
-global count for pending outreach across every active-stage entry.
+  candidates file — just the gap, for a manual/WebSearch pass per company.
 
 ## Standing context
 
