@@ -30,7 +30,7 @@ import sys
 
 from neo4j import GraphDatabase
 
-from _neo4j import find_company, load_env
+from _neo4j import find_company, is_exact_match, load_env
 
 
 def pipeline_contacts(session, company: str) -> list[dict]:
@@ -115,7 +115,7 @@ def main() -> int:
             if not matches:
                 print(f'No company matching "{args.company}" found in the graph.')
                 return 1
-            if len(matches) > 1 or matches[0]["score"] < 100:
+            if not is_exact_match(matches):
                 print(f'No exact match for "{args.company}". Close matches in the graph:')
                 for m in matches[:10]:
                     print(f"  [{m['score']:>5}] {m['name']}")
