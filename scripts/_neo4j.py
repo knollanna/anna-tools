@@ -1,6 +1,7 @@
 """Shared bits for the graph_import* and warm_path scripts: repo paths, .env
 loading, company/person-name aliasing, and company-name normalization."""
 
+import ast
 import json
 import re
 from pathlib import Path
@@ -9,6 +10,18 @@ REPO = Path(__file__).resolve().parent.parent
 ENV = REPO / ".env"
 COMPANY_ALIASES = REPO / "job" / "company_aliases.json"
 PERSON_ALIASES = REPO / "job" / "person_aliases.json"
+JOBWATCH_ENV = REPO.parent / "jobwatch" / ".env"
+JOBWATCH_CONFIG = REPO.parent / "jobwatch" / "config.py"
+
+# Every pipeline stage except the closed ones (job/pipeline.json's own
+# "stages" list has the full set) - the complement of objection_report.py's
+# CLOSED_STAGES, kept as its own literal here rather than importing a script
+# not meant to be a library. Deliberately wider than any one script's prior
+# "active" set (board.py's LIVE, job_scaffold.py's ACTIVE, and an earlier cut
+# of this constant all disagreed, and all three dropped "interviewing" or
+# "waiting" - the highest-priority stages to have title/company coverage for).
+OPEN_STAGES = {"interviewing", "waiting", "applied", "followup",
+               "considering", "outreach", "warm"}
 
 _SUFFIXES = re.compile(
     r"\b(inc|llc|ltd|corp|corporation|co|company|group|holdings?|"
@@ -62,13 +75,37 @@ def is_exact_match(matches: list[dict]) -> bool:
     return len(matches) == 1 and matches[0]["score"] >= 100
 
 
-def load_env() -> dict:
+def load_env(path: Path = ENV) -> dict:
+    if not path.exists():
+        raise FileNotFoundError(f"no .env at {path}")
     env = {}
-    for line in ENV.read_text(encoding="utf-8").splitlines():
+    for line in path.read_text(encoding="utf-8").splitlines():
         if "=" in line and not line.startswith("#"):
             k, v = line.split("=", 1)
             env[k.strip()] = v.strip()
     return env
+
+
+def load_jobwatch_config_names(*names: str) -> dict:
+    """Pull top-level list/dict assignments out of jobwatch/config.py by name,
+    without importing it (keeps these scripts out of JobWatch's own venv/
+    deps). Used by every script here that needs to compare pipeline data
+    against JobWatch's search config - one parse of the file per call,
+    shared instead of each script walking the AST itself."""
+    if not JOBWATCH_CONFIG.exists():
+        raise FileNotFoundError(f"no config.py at {JOBWATCH_CONFIG}")
+    tree = ast.parse(JOBWATCH_CONFIG.read_text(encoding="utf-8"))
+    wanted = set(names)
+    found = {}
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and len(node.targets) == 1:
+            target = node.targets[0]
+            if isinstance(target, ast.Name) and target.id in wanted:
+                found[target.id] = ast.literal_eval(node.value)
+    missing = wanted - found.keys()
+    if missing:
+        raise ValueError(f"{JOBWATCH_CONFIG} has no top-level assignment(s) named {sorted(missing)}")
+    return found
 
 
 def _load_json(path: Path) -> dict:
