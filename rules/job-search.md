@@ -110,6 +110,24 @@ Any of these, without being asked:
 - New research on a company already in the pipeline
 - A contact name, title, or role gets corrected
 
+## Gmail rejection sweeps
+
+When checking Gmail for a rejection (an objection-classification backfill, or just
+"did I hear back from X"), never lock a search to an exact multi-word quoted phrase like
+`"not moving forward"`. Real rejection emails vary the words *around* a phrase more than
+the phrase itself — "we will **not be** moving forward" doesn't contain the substring "not
+moving forward" and a phrase-locked query silently misses it, with no error, no empty-result
+warning distinguishing "nothing to find" from "the query was too rigid." A real Teleport
+rejection was missed exactly this way before this note existed.
+
+Search on the shorter, more stable fragment instead (`"moving forward"`, not `"not moving
+forward"`), or drop the phrase entirely for single strong words (`reject`, `rejected`,
+`unfortunately`, `"other candidate"`, `"position has been filled"`, `"not selected"`) and
+OR them together. Broad-and-cross-reference beats narrow-and-precise here: a mailbox-wide
+sweep with loose terms, checked against company names already in the pipeline, catches more
+than one exact-phrase query per company. Run this against `applied`-stage entries too, not
+just closed ones — a rejection can land before anyone updates the stage.
+
 ## What to capture
 
 Match the existing house style. It is dense on purpose and it works.
@@ -156,6 +174,30 @@ Three entries in the same `inferred_class` is a positioning problem, not luck.
 `job_context_nudge.py` reports how many closed entries still need one on any
 job-search-relevant prompt — `python3 scripts/objection_report.py` proposes a class
 per entry from its note text (confirm or correct, it never writes).
+
+## Warm-path check
+
+A `considering` or `outreach` entry can carry a `human_path` object —
+`checked` (date), `rungs_checked` (which of `pipeline`, `linkedin`, `alumni`,
+`named-contact` were actually attempted), `best_rung` (the highest that
+succeeded, or `"none"`), `summary`, and an optional `note`. Log one before the
+entry moves to `applied`. `best_rung: "none"` is a legitimate, honest answer —
+it's still correct to apply cold — but the field records that the question was
+actually asked. An absent `human_path` means *unchecked*, not *checked, nothing
+found*; don't leave it off once a check has run.
+
+`python3 scripts/warm_path.py "<Company>"` answers rungs 1-2 (pipeline contacts,
+direct LinkedIn connections) from the Neo4j graph. Alumni overlap and naming a
+hiring manager or recruiter (rungs 3-4) need a manual/WebSearch pass — the graph
+has no data to answer those, and this is the one part of `human_path` a session
+proposes from judgment rather than a query result. Never invent `summary` or
+`best_rung`; mark `"none"` honestly rather than guessing at a path that wasn't
+actually found.
+
+`job_context_nudge.py` flags a named company that's at a gated stage with no
+`human_path` yet, and separately reports how many `considering`/`outreach`
+entries overall are still unchecked — `python3 scripts/human_path_report.py`
+lists them and runs the graph query for each.
 
 ## Standing context
 
