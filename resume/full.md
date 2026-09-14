@@ -93,6 +93,9 @@ discovery, solution design, and deployment across regulated industries.
 
 ## Selected projects
 
+- Built and deployed FareWatch, a live Python/Flask service for a travel advisory business —
+  integrates the Duffel, LiteAPI, SendGrid, and Slack APIs, runs a 2-hourly price-check cron on
+  Render, backed by Supabase Postgres
 - Built a transcript analysis tool using Claude that processed hundreds of meeting
   transcripts, indexed by participant and date, enabling natural-language querying and
   analysis across six months of conversations
@@ -173,7 +176,27 @@ Sourced from Anna directly or from shipped copy on annaknoll.com.
 - **On the early NLP work:** ontologies, taxonomies, and enterprise search, "back when getting
   a computer to understand a question meant months of hand-tuning."
 - **Current technical interests:** AI-agent security, building with AI.
+- **Internal Agentforce security-detection tool, at Salesforce:** co-designed (helped with the
+  design; a colleague implemented it) a custom MCP server wrapping existing Salesforce APIs to
+  surface AI-agent security and permissions visibility gaps not available out of the box in
+  Agentforce. Not productized — used internally and to demonstrate to customers what's possible
+  to build custom in Salesforce. Real, professional Salesforce work; frame as co-designed, not
+  built solo.
+- **Neo4j / knowledge graphs:** self-directed research, not professional/production experience —
+  dug into Neo4j while prepping for a prior application to Acrete, which needed knowledge-graph
+  familiarity. Also experimented with Neo4j's MCP (Model Context Protocol) server, connecting it
+  to Claude. Real and recent, but independent study, not a work history line. Frame it as that
+  precisely if it comes up — don't let it inflate into claimed hands-on production experience.
 - **Family travel advisor with Fora.** Amalfi, Bangkok, London.
+- **Employee Experience products, HR/ITSM (Salesforce, 2018-2022):** the specialist team she
+  stood up and led (see Principal Solution Engineer/Team Lead role above) was Salesforce's own
+  push into the HR and ITSM space, positioned against ServiceNow. She worked closely with
+  product managers while the offering was being built, and — because Salesforce lacked
+  in-house ITSM/HR domain depth — helped hire people directly from BMC, ServiceNow, and Oracle
+  HCM, then onboarded them onto the Salesforce platform. Also part of a partnership with Tanium
+  to bring a real-time incident-management view into the service-agent experience. Real, direct
+  ITSM/incident-management selling and team-building experience, not adjacent-only — relevant
+  whenever a role names ITSM or incident management specifically (e.g. PagerDuty).
 
 ## Side projects (deployed, verifiable, hers)
 
