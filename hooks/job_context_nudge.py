@@ -164,9 +164,27 @@ def gated_hits_missing_human_path(entries: list[dict], hits: list[str]) -> list[
     return sorted(by_company.items())
 
 
+OUTREACH_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def outreach_state(hp: dict) -> str:
+    """"contacted" | "skipped" | "pending" for a human_path object. Anything
+    that isn't exactly "skipped" or a YYYY-MM-DD date - a typo like "Skipped",
+    a malformed date, a stray value - reads as "pending" rather than silently
+    as "contacted": failing toward over-nudging is safe, failing toward
+    silence defeats the point of a nudge that's supposed to be a guarantee."""
+    outreach = hp.get("outreach")
+    if outreach == "skipped":
+        return "skipped"
+    if outreach and OUTREACH_DATE.match(outreach):
+        return "contacted"
+    return "pending"
+
+
 def pending_outreach_count(entries: list[dict]) -> int:
-    """Entries with a real human_path (best_rung not "none") whose outreach
-    is still unset - a found lead nobody's used yet. Broader stage scope than
+    """Entries with a real human_path (best_rung not "none") that are still
+    "pending" (not "skipped" - that gets its own distinct nudge below, not
+    lumped into "not yet contacted"). Broader stage scope than
     pending_human_path_count: a warm contact found after applying is still
     worth using, so this covers every non-closed stage, not just the
     pre-applied gate."""
@@ -175,7 +193,7 @@ def pending_outreach_count(entries: list[dict]) -> int:
         if e.get("stage") in ACTIVE_STAGES
         and (hp := e.get("human_path"))
         and hp.get("best_rung") not in (None, "none")
-        and not hp.get("outreach")
+        and outreach_state(hp) == "pending"
     )
 
 
@@ -183,28 +201,41 @@ def gated_hits_pending_outreach(entries: list[dict], hits: list[str]) -> list[tu
     """(company, kind, summary) for each hit with a found human_path whose
     outreach is "pending" (never actioned) or "skipped" (a deliberate pass -
     worth another warm-path pass for a stronger lead, not a repeat nudge to
-    contact someone already declined). A contacted entry (outreach holds a
-    date) is done and returns nothing.
+    contact someone already declined). A contacted entry is done and returns
+    nothing.
+
+    Deduped per company on (kind, summary): a company with two active-stage
+    entries reporting the identical lead collapses to one line, same fix
+    PR #10 applied to gated_hits_missing_human_path for the same duplicate-
+    line shape. Two entries with genuinely different leads still each get
+    their own line.
 
     Same parenthetical-stripping as gated_hits_missing_human_path - a pipeline
     entry's raw `company` field can carry a trailing parenthetical that hits
     (from matched_companies()) never will."""
-    found = []
+    by_company: dict[str, list[tuple[str, str]]] = {}
     for e in entries:
         if e.get("stage") not in ACTIVE_STAGES:
             continue
         hp = e.get("human_path")
         if not hp or hp.get("best_rung") in (None, "none"):
             continue
-        outreach = hp.get("outreach")
-        if outreach and outreach != "skipped":
-            continue  # a date string - already contacted, nothing to nudge
+        kind = outreach_state(hp)
+        if kind == "contacted":
+            continue
         company = e.get("company", "")
         stripped = PARENTHETICAL.sub("", company).strip()
-        if stripped in hits:
-            kind = "skipped" if outreach == "skipped" else "pending"
-            found.append((company, kind, hp.get("summary", "")))
-    return found
+        if stripped not in hits:
+            continue
+        pair = (kind, hp.get("summary", ""))
+        leads = by_company.setdefault(company, [])
+        if pair not in leads:
+            leads.append(pair)
+    return [
+        (company, kind, summary)
+        for company, leads in sorted(by_company.items())
+        for kind, summary in leads
+    ]
 
 
 def main() -> int:
