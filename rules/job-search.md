@@ -179,8 +179,9 @@ per entry from its note text (confirm or correct, it never writes).
 
 A `considering` or `outreach` entry can carry a `human_path` object —
 `checked` (date), `rungs_checked` (which of `pipeline`, `linkedin`, `alumni`,
-`named-contact` were actually attempted), `best_rung` (the highest that
-succeeded, or `"none"`), `summary`, and an optional `note`. Log one before the
+`named-contact`, `mutual-connection` were actually attempted), `best_rung`
+(the highest that succeeded, or `"none"`), `summary`, and an optional `note`.
+Log one before the
 entry moves to `applied`. `best_rung: "none"` is a legitimate, honest answer —
 it's still correct to apply cold — but the field records that the question was
 actually asked. An absent `human_path` means *unchecked*, not *checked, nothing
