@@ -56,7 +56,8 @@ anna-tools/
 │   ├── hooks.json             event wiring
 │   ├── _lib.py                payload parsing + root resolution
 │   ├── session_init.py        SessionStart: where am I, which rules apply
-│   └── job_context_nudge.py   UserPromptSubmit: surfaces the job rule on a match
+│   ├── job_context_nudge.py   UserPromptSubmit: surfaces the job rule on a match
+│   └── guard_mcp_readonly.py  PreToolUse: default-deny non-allowlisted Gmail/Drive MCP calls
 ├── scripts/
 │   ├── board.py               pipeline.json -> tracker.md + board.html
 │   └── job_scaffold.py        one folder per active company, from the pipeline
@@ -187,6 +188,7 @@ Anna actually needs it.**
 | Piece | Status |
 | --- | --- |
 | Hook (`job_context_nudge.py`) | **Built.** Anna asked for a guarantee, not a habit — a prose rule that only works when someone remembers to read it is the case a hook exists for. |
+| Hook (`guard_mcp_readonly.py`) | **Built.** "Read only" for the Gmail/Drive connectors was doctrine only — neither connector has a read-only mode, so an agent's own restraint was the sole thing standing between a connected account and a full read+write+destructive grant. A hook is the same "guarantee, not a habit" argument, applied to a security boundary instead of a reminder. |
 | Script (`board.py`) | **Built.** Converting 60 JS objects to markdown by hand is the definition of work a model should not be doing. |
 | Skills (`/tailor-resume`, `/new-post`) | Not yet. Write one the second time you explain the same process. `/tailor-resume` is the obvious first candidate. |
 | Agents | Not yet. Add when a task reliably burns your context reading files. |
