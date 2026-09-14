@@ -90,7 +90,9 @@ def pattern_report(entries: list[dict]) -> None:
         for cls, ids in by_class.items():
             if not ids:
                 continue
-            flag = "  <- pattern, a positioning problem, not luck" if len(ids) >= 3 else ""
+            # "unknown" at 3+ just means the record doesn't say why - a real gap in
+            # the data, not a positioning pattern. Don't claim insight it doesn't have.
+            flag = "  <- pattern, a positioning problem, not luck" if (cls != "unknown" and len(ids) >= 3) else ""
             print(f"  {cls} ({len(ids)}){flag}")
             for entry_id in ids:
                 print(f"    {entry_id}")
