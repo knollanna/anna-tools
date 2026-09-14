@@ -110,24 +110,6 @@ Any of these, without being asked:
 - New research on a company already in the pipeline
 - A contact name, title, or role gets corrected
 
-## Gmail rejection sweeps
-
-When checking Gmail for a rejection (an objection-classification backfill, or just
-"did I hear back from X"), never lock a search to an exact multi-word quoted phrase like
-`"not moving forward"`. Real rejection emails vary the words *around* a phrase more than
-the phrase itself — "we will **not be** moving forward" doesn't contain the substring "not
-moving forward" and a phrase-locked query silently misses it, with no error, no empty-result
-warning distinguishing "nothing to find" from "the query was too rigid." A real
-rejection was missed exactly this way before this note existed.
-
-Search on the shorter, more stable fragment instead (`"moving forward"`, not `"not moving
-forward"`), or drop the phrase entirely for single strong words (`reject`, `rejected`,
-`unfortunately`, `"other candidate"`, `"position has been filled"`, `"not selected"`) and
-OR them together. Broad-and-cross-reference beats narrow-and-precise here: a mailbox-wide
-sweep with loose terms, checked against company names already in the pipeline, catches more
-than one exact-phrase query per company. Run this against `applied`-stage entries too, not
-just closed ones — a rejection can land before anyone updates the stage.
-
 ## What to capture
 
 Match the existing house style. It is dense on purpose and it works.
