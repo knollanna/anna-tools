@@ -24,7 +24,7 @@ from pathlib import Path
 
 from neo4j import GraphDatabase
 
-from _neo4j import find_company, load_env
+from _neo4j import find_company, is_exact_match, load_env
 from warm_path import linkedin_connections, pipeline_contacts, render
 
 REPO = Path(__file__).resolve().parent.parent
@@ -55,7 +55,7 @@ def main() -> int:
             for e in pending:
                 print(f"=== {e['id']} ({e['company']}, {e['stage']}) ===")
                 matches = find_company(session, e["company"])
-                if not matches or (len(matches) > 1 or matches[0]["score"] < 100):
+                if not is_exact_match(matches):
                     print(f'  No exact graph match for "{e["company"]}" — check the name by hand.')
                     print()
                     continue
