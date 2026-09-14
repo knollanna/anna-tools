@@ -40,6 +40,7 @@ HUMAN_PATH_REPORT = _lib.plugin_root() / "scripts" / "human_path_report.py"
 
 CLOSED_STAGES = {"lost", "dropped", "noresponse"}
 GATED_STAGES = {"considering", "outreach"}
+ACTIVE_STAGES = {"considering", "outreach", "applied", "warm", "followup"}
 
 # Phrases that mean "this is about the search" on their own.
 SIGNALS = re.compile(
@@ -163,6 +164,80 @@ def gated_hits_missing_human_path(entries: list[dict], hits: list[str]) -> list[
     return sorted(by_company.items())
 
 
+OUTREACH_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def outreach_state(hp: dict) -> str:
+    """"contacted" | "skipped" | "pending" for a human_path object. Anything
+    that isn't exactly "skipped" or a YYYY-MM-DD date - a typo like "Skipped",
+    a malformed date, a stray value - reads as "pending" rather than silently
+    as "contacted": failing toward over-nudging is safe, failing toward
+    silence defeats the point of a nudge that's supposed to be a guarantee."""
+    outreach = hp.get("outreach")
+    if outreach == "skipped":
+        return "skipped"
+    if outreach and OUTREACH_DATE.match(outreach):
+        return "contacted"
+    return "pending"
+
+
+def pending_outreach_count(entries: list[dict]) -> int:
+    """Entries with a real human_path (best_rung not "none") that are still
+    "pending" (not "skipped" - that gets its own distinct nudge below, not
+    lumped into "not yet contacted"). Broader stage scope than
+    pending_human_path_count: a warm contact found after applying is still
+    worth using, so this covers every non-closed stage, not just the
+    pre-applied gate."""
+    return sum(
+        1 for e in entries
+        if e.get("stage") in ACTIVE_STAGES
+        and (hp := e.get("human_path"))
+        and hp.get("best_rung") not in (None, "none")
+        and outreach_state(hp) == "pending"
+    )
+
+
+def gated_hits_pending_outreach(entries: list[dict], hits: list[str]) -> list[tuple[str, str, str]]:
+    """(company, kind, summary) for each hit with a found human_path whose
+    outreach is "pending" (never actioned) or "skipped" (a deliberate pass -
+    worth another warm-path pass for a stronger lead, not a repeat nudge to
+    contact someone already declined). A contacted entry is done and returns
+    nothing.
+
+    Deduped per company on (kind, summary): a company with two active-stage
+    entries reporting the identical lead collapses to one line, same fix
+    PR #10 applied to gated_hits_missing_human_path for the same duplicate-
+    line shape. Two entries with genuinely different leads still each get
+    their own line.
+
+    Same parenthetical-stripping as gated_hits_missing_human_path - a pipeline
+    entry's raw `company` field can carry a trailing parenthetical that hits
+    (from matched_companies()) never will."""
+    by_company: dict[str, list[tuple[str, str]]] = {}
+    for e in entries:
+        if e.get("stage") not in ACTIVE_STAGES:
+            continue
+        hp = e.get("human_path")
+        if not hp or hp.get("best_rung") in (None, "none"):
+            continue
+        kind = outreach_state(hp)
+        if kind == "contacted":
+            continue
+        company = e.get("company", "")
+        stripped = PARENTHETICAL.sub("", company).strip()
+        if stripped not in hits:
+            continue
+        pair = (kind, hp.get("summary", ""))
+        leads = by_company.setdefault(company, [])
+        if pair not in leads:
+            leads.append(pair)
+    return [
+        (company, kind, summary)
+        for company, leads in sorted(by_company.items())
+        for kind, summary in leads
+    ]
+
+
 def main() -> int:
     prompt = str(_lib.payload().get("prompt", ""))
     if not prompt or not JOB.is_dir():
@@ -220,6 +295,18 @@ def main() -> int:
                 f"`python3 {WARM_PATH} \"{company}\"` (and check for alumni overlap or a named "
                 "hiring manager/recruiter by hand) before applying."
             )
+        for company, kind, summary in gated_hits_pending_outreach(entries, hits):
+            if kind == "pending":
+                lines.append(
+                    f"  - 📨 {company}: warm path found ({summary}) but not yet contacted. "
+                    "Reach out, or note here if you have."
+                )
+            else:
+                lines.append(
+                    f"  - 🔁 {company}: the warm path found ({summary}) was skipped. Worth "
+                    "another warm-path pass (alumni overlap or a named contact) for a "
+                    "stronger lead?"
+                )
 
     pending = sorted(p for p in (JOB / "inbox").glob("*.md") if p.name != "README.md")
     if pending:
@@ -242,6 +329,13 @@ def main() -> int:
             f"- 🤝 {pending_warm} `considering`/`outreach` entr{'y has' if pending_warm == 1 else 'ies have'} "
             f"no warm-path check logged. Run `python3 {HUMAN_PATH_REPORT}` to see who's still "
             "unchecked before any of them move to `applied`."
+        )
+
+    pending_outreach = pending_outreach_count(entries)
+    if pending_outreach:
+        lines.append(
+            f"- 📨 {pending_outreach} entr{'y has' if pending_outreach == 1 else 'ies have'} a "
+            "warm path found but not yet contacted."
         )
 
     if stale:
