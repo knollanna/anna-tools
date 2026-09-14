@@ -64,8 +64,12 @@ def render(company: str, contacts: list[dict], connections: list[dict]) -> str:
     lines.append(f"Pipeline contacts ({len(contacts)})")
     if contacts:
         for c in contacts:
-            role = f" — {c['role']}" if c.get("role") else ""
-            lines.append(f"  {c['name']}{role}")
+            # detail carries the full parenthetical from pipeline.json; role
+            # is only its first comma-delimited segment (graph_import.py) and
+            # would silently truncate anything past the first comma.
+            info = c.get("detail") or c.get("role")
+            tail = f" — {info}" if info else ""
+            lines.append(f"  {c['name']}{tail}")
     else:
         lines.append("  (none)")
     lines.append("")
