@@ -17,6 +17,7 @@ that misses one nudge.
 Wired on UserPromptSubmit. Reads the hook payload as JSON on stdin.
 """
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -33,6 +34,9 @@ TRACKER_MD = JOB / "tracker.md"
 PIPELINE = JOB / "pipeline.json"
 RULE = _lib.plugin_root() / "rules" / "job-search.md"
 BOARD = _lib.plugin_root() / "scripts" / "board.py"
+OBJECTION_REPORT = _lib.plugin_root() / "scripts" / "objection_report.py"
+
+CLOSED_STAGES = {"lost", "dropped", "noresponse"}
 
 # Phrases that mean "this is about the search" on their own.
 SIGNALS = re.compile(
@@ -99,6 +103,22 @@ def last_updated() -> str:
     return "unknown"
 
 
+def unclassified_closed_count() -> int:
+    """Closed entries (lost/dropped/noresponse) with no `objection` field yet.
+    Mirrors the inbox count below: a count computed here fires on every relevant
+    prompt, so it can't be forgotten the way a prose reminder can."""
+    if not PIPELINE.exists():
+        return 0
+    try:
+        data = json.loads(PIPELINE.read_text(encoding="utf-8"))
+    except Exception:
+        return 0
+    return sum(
+        1 for e in data.get("entries", [])
+        if e.get("stage") in CLOSED_STAGES and not e.get("objection")
+    )
+
+
 def main() -> int:
     prompt = str(_lib.payload().get("prompt", ""))
     if not prompt or not JOB.is_dir():
@@ -151,6 +171,13 @@ def main() -> int:
         lines.append(
             f"- 📥 {len(pending)} unfiled item(s) in `{JOB / 'inbox'}`: {names}. "
             "Offer to file them into the right company folder."
+        )
+
+    unclassified = unclassified_closed_count()
+    if unclassified:
+        lines.append(
+            f"- 🏷️ {unclassified} closed entr{'y has' if unclassified == 1 else 'ies have'} no "
+            f"objection classification yet. Run `python3 {OBJECTION_REPORT}` to see suggestions."
         )
 
     if stale:

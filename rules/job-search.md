@@ -146,6 +146,17 @@ Match the existing house style. It is dense on purpose and it works.
 - **Never put job-search detail in a tracked file**, in `resume/`, on annaknoll.com, or in any
   artifact. The site rule "keep private job-search details off the page" applies everywhere.
 
+## Objection classification
+
+A closed entry (`lost`, `dropped`, `noresponse`) can carry an `objection` object —
+`stated`, `inferred_class` (`domain-proof-gap` · `level-mismatch` · `location` ·
+`comp` · `slate` · `culture-style` · `unknown`), `confidence`, and `note`. Classify
+by hand or by a session from what the record actually says; never invent `stated`.
+Three entries in the same `inferred_class` is a positioning problem, not luck.
+`job_context_nudge.py` reports how many closed entries still need one on any
+job-search-relevant prompt — `python3 scripts/objection_report.py` proposes a class
+per entry from its note text (confirm or correct, it never writes).
+
 ## Standing context
 
 - **Comp floor and target role shape are stated in `job/Anna_Job_Search_Context.md`** under
