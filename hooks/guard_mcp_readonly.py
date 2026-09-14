@@ -34,11 +34,17 @@ connectors listed here, not every MCP connector on the machine. That's scope,
 not a gap: broadening it to deny-by-default for every unknown connector would
 also block benign, no-data-access tools like visualize's show_widget.
 
-Gmail's allowlist is a best guess made before the account was ever connected —
-the registry only showed 8 of its ~29 tools. Google Drive's allowlist is built
-from its actual tool list (11 tools, all visible — Drive is already connected
-in this session), so it should be accurate as of when this was written; recheck
-if Drive's tool surface ever changes.
+Both allowlists are now built from each connector's real, live tool list, not
+the MCP registry's catalog listing — the registry's "directoryUuid" for Gmail
+(2701e52f-b826-4aaf-8b25-11f2a97c98b0) turned out to NOT be the UUID Gmail
+actually uses in its live tool names once connected (0aa0b9c3-90ee-4996-bacd-
+dce44f335b6c) — confirmed the first time Gmail was actually connected, which
+means the guardrail did not cover this connector at all until this was caught
+and fixed. The registry catalog UUID and the live per-connection UUID are not
+guaranteed to be the same value; never trust the registry's UUID for a hook
+matcher again — only a UUID observed in a real, live tool name for THIS
+connector. Google Drive's UUID was already right because it had been sourced
+from the live session both times, not from the registry.
 
 Uses hooks/_lib.py's payload() for stdin parsing (it already fails soft on
 non-dict JSON, which a hand-rolled json.load(sys.stdin) here previously did
@@ -59,17 +65,15 @@ import json
 
 # uuid -> (label, allowlist). Label is only for the deny message.
 MCP_ALLOWLISTS = {
-    "2701e52f-b826-4aaf-8b25-11f2a97c98b0": (
+    "0aa0b9c3-90ee-4996-bacd-dce44f335b6c": (
         "Gmail",
         {
             "get_message",
             "get_thread",
-            "list_messages",
-            "list_threads",
-            "search_messages",
             "search_threads",
             "list_labels",
-            "get_attachment",
+            "list_drafts",
+            "get_draft",
         },
     ),
     "27b5f497-98e1-4a23-bda1-e8dfcd61e80c": (
