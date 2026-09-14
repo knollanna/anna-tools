@@ -26,13 +26,13 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "mcp__2701e52f-b826-4aaf-8b25-11f2a97c98b0__.*",
+        "matcher": "mcp__.*",
         "hooks": [
           {
             "type": "command",
             "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/guard_mcp_readonly.py",
             "timeout": 10,
-            "statusMessage": "Checking Gmail read-only guardrail"
+            "statusMessage": "Checking MCP read-only guardrail"
           }
         ]
       }
