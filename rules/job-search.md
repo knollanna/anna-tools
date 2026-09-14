@@ -228,6 +228,32 @@ was `"skipped"` (a different nudge — worth another pass for a stronger lead,
 not a repeat push to contact someone already declined) — plus a matching
 global count for pending outreach across every active-stage entry.
 
+## JobWatch integration
+
+JobWatch (the nightly scraper, `../jobwatch/`) runs on Render with a
+filesystem wiped between cron runs, so it can never reach this local,
+`bolt://`-only Neo4j graph directly. Three one-way bridges instead, all
+advisory except the sync — nothing here writes back into `pipeline.json` or
+`jobwatch/config.py` on its own:
+
+- **`python3 scripts/warm_path_sync.py`** — pushes a company name + contact/
+  connection count (never a name) from the graph into a `warm_path` table in
+  JobWatch's own Supabase project, the same local→cloud bridge
+  `dedupe_store.py` already uses for dedupe. JobWatch's digest then flags a
+  posting with `🤝 N contact(s)` and a small score bonus (`WARM_PATH_BONUS`
+  in `jobwatch/config.py`), on every channel — console, email, and Slack.
+  Run it after `graph_import.py` / `graph_import_linkedin.py`, same cadence.
+  Stale between syncs; that's fine at a once-a-day digest cadence.
+- **`python3 scripts/title_match_suggest.py`** — compares active-stage
+  pipeline `role` titles against JobWatch's `ADZUNA_PHRASES` /
+  `ATS_TITLE_KEYWORDS`, writes uncovered ones to
+  `job/title_match_candidates.json` for review. Some `role` values are status
+  notes ("WATCHING — no SE leadership role open"), not real titles — read the
+  list, don't paste it wholesale into `jobwatch/config.py`.
+- **`python3 scripts/ats_coverage_report.py`** — lists active-stage pipeline
+  companies missing from JobWatch's `ATS_BOARDS`. No token lookup, no
+  candidates file — just the gap, for a manual/WebSearch pass per company.
+
 ## Standing context
 
 - **Comp floor and target role shape are stated in `job/Anna_Job_Search_Context.md`** under
