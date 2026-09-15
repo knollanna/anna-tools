@@ -25,7 +25,7 @@ import sys
 from neo4j import GraphDatabase
 from supabase import create_client
 
-from _neo4j import JOBWATCH_ENV, load_env
+from _neo4j import JOBWATCH_ENV, load_aliases, load_env
 
 
 def fetch_counts(session) -> list[dict]:
@@ -106,6 +106,24 @@ def main() -> int:
             # independent of Neo4j's (unordered) result order.
             collisions[key] = sorted(r["company"] for r in group)
 
+    # JobWatch's own spelling of a company (ATS_BOARDS, Adzuna's display_name,
+    # Getro's org name) doesn't always match the graph's canonical name from
+    # pipeline.json - e.g. the graph might carry a parent-company-qualified
+    # name ("Acme (Acme Robotics)") while JobWatch's own config uses the
+    # short form ("Acme"), so scorer.py's exact-lowercase lookup misses even
+    # though a warm-path row exists. company_aliases.json already maps a
+    # short/alternate spelling to its canonical graph name for this exact
+    # reason on the import side (graph_import.py) - reuse it here to also
+    # sync a row under each alias spelling, pointing at the same counts as
+    # its canonical company, so either spelling resolves.
+    rows_by_key = {r["company"]: r for r in rows}
+    added_via_alias = []
+    for alias, canonical in load_aliases().items():
+        alias_key, canonical_key = alias.lower(), canonical.lower()
+        if canonical_key in rows_by_key and alias_key not in rows_by_key:
+            rows.append({**rows_by_key[canonical_key], "company": alias_key})
+            added_via_alias.append((alias, canonical))
+
     client = create_client(supabase_url, supabase_key)
     client.table("warm_path").upsert(rows, on_conflict="company").execute()
 
@@ -125,6 +143,10 @@ def main() -> int:
         print(f"  {row['company']!r}: {row['contact_count']} contact(s), {row['connection_count']} connection(s)")
     if skipped:
         print(f"\n{len(skipped)} Company node(s) with no name property skipped.")
+    if added_via_alias:
+        print(f"\n{len(added_via_alias)} alias row(s) added so JobWatch's own spelling resolves too:")
+        for alias, canonical in added_via_alias:
+            print(f"  {alias!r} -> same counts as {canonical!r}")
     if stale_keys:
         print(f"{len(stale_keys)} stale row(s) no longer backed by a contact/connection removed: "
               f"{', '.join(sorted(stale_keys))}")
