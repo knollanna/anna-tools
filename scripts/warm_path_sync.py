@@ -83,7 +83,7 @@ def main() -> int:
         print("No companies with a contact or connection in the graph - nothing to sync.")
         return 0
 
-    # Two differently-cased Company nodes (e.g. "NiCE" / "NICE") collapse to
+    # Two differently-cased Company nodes (e.g. "Acme" / "ACME") collapse to
     # the same lowercase key here even though graph_import's MERGE never
     # unified them as one node - sum rather than let the second upsert in the
     # same batch collide with the first. Surfaced separately below so the

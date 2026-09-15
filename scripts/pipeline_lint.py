@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Lint job/pipeline.json for the data-entry mistakes that hid real contacts
 this session: an annotation baked into the company field instead of its own
-field (e.g. "Databricks (ex)", "Google (Anwar Miller)"), and a contacts
+field (e.g. "Acme Inc (ex)", "Acme Inc (Jamie Rivera)"), and a contacts
 string with no "Name (detail)" shape that graph_import.py's CONTACT_RE
-silently parses into zero edges (e.g. a bare "Khurram Baloch" with no
+silently parses into zero edges (e.g. a bare "Jamie Rivera" with no
 parenthetical) - no error, just a contact that quietly never reaches the
 graph. Also flags a leftover placeholder value like "TBD" in contacts.
 

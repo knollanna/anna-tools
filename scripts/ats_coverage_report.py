@@ -12,7 +12,7 @@ ats_sources.py does the fetching once a token is known).
 Comparison is normalized (case/punctuation/legal-suffix-insensitive, the same
 normalize() used to resolve a graph company name), not just lower()'d - so
 "Salesforce, Inc." in the pipeline still matches "Salesforce" in ATS_BOARDS.
-It still won't catch every real match: an alias like "Cursor (Anysphere)"
+It still won't catch every real match: an alias like "Meta (Facebook)"
 needs an actual entry in job/company_aliases.json to resolve, the same limit
 company_aliases_suggest.py's own candidates have until approved.
 

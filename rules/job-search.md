@@ -117,8 +117,8 @@ When checking Gmail for a rejection (an objection-classification backfill, or ju
 `"not moving forward"`. Real rejection emails vary the words *around* a phrase more than
 the phrase itself — "we will **not be** moving forward" doesn't contain the substring "not
 moving forward" and a phrase-locked query silently misses it, with no error, no empty-result
-warning distinguishing "nothing to find" from "the query was too rigid." A real Teleport
-rejection was missed exactly this way before this note existed.
+warning distinguishing "nothing to find" from "the query was too rigid." A real rejection
+was missed exactly this way before this note existed.
 
 Search on the shorter, more stable fragment instead (`"moving forward"`, not `"not moving
 forward"`), or drop the phrase entirely for single strong words (`reject`, `rejected`,
@@ -132,8 +132,8 @@ just closed ones — a rejection can land before anyone updates the stage.
 
 Match the existing house style. It is dense on purpose and it works.
 
-- **Date every event and say what kind it was.** `CALL HELD Aug 11, 2026 with Nir (COO) and
-  Yuval (CTO)`. `RECRUITER CALL HELD Aug 5/6, 2026`. `Applied Aug 11, 2026`.
+- **Date every event and say what kind it was.** `CALL HELD Aug 11, 2026 with Sam (COO) and
+  Robin (CTO)`. `RECRUITER CALL HELD Aug 5/6, 2026`. `Applied Aug 11, 2026`.
 - **Get dates from `date`, never from memory or mental arithmetic.** Convert "last Tuesday"
   to an absolute date before writing it down.
 - **Bold the flags.** `**FLAG — HARD REQUIREMENT:**`, `**ROLE-TYPE FLAG:**`,

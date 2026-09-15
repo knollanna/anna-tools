@@ -11,7 +11,7 @@ Two passes:
   1. Deterministic normalize (case, punctuation, legal suffixes) — catches
      "Google Cloud" style noise outright, no scoring needed.
   2. Fuzzy match the remainder against pipeline names via rapidfuzz —
-     catches typos like SykSync/SkySync. Suggestions only; nothing is
+     catches typos like Acmee/Acme. Suggestions only; nothing is
      auto-merged.
 
 Writes candidates to job/company_alias_candidates.json for review. Approving
