@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Daily Slack digest of job-search follow-ups: warm contacts found but not
-yet reached out to, applications sitting at `applied` awaiting a response,
-and entries that have gone quiet past a threshold.
+"""Daily Slack digest of job-search follow-ups: `considering`-stage entries
+worth actually applying to, warm contacts found but not yet reached out to
+(by name, with when/how they were last touched), and entries that have gone
+quiet past a threshold.
 
 `hooks/job_context_nudge.py` already computes most of this, but only
 reactively - injected into a session when a prompt happens to look
@@ -11,11 +12,16 @@ a day, to Slack.
 job/pipeline.json is exactly the data rules/job-search.md says must never
 leave this machine unnamed-contact-free, so this can't run on a cron host the
 way JobWatch does - meant to run locally on a schedule (see
-scripts/launchd/com.annaknoll.job-digest.plist.example). Sends company, role,
-stage, and dates only - never a contact's name, a comp figure, or note prose.
-Warm-contact entries use human_path.best_rung (a category: "linkedin",
-"pipeline", etc.), never human_path.summary, which routinely contains a
-contact's actual name and title.
+scripts/launchd/com.annaknoll.job-digest.plist.example).
+
+Sends a contact's name (human_path.contact_name) and their last-touch date +
+type (human_path.last_contacted) when those are on file - never comp, never
+note prose. This is a DELIBERATE, SCOPED exception to "named contacts never
+leave this machine": the destination is a Slack webhook/channel Anna created
+and fully controls, confirmed no other app has access. See "Named contact and
+touch history" in rules/job-search.md before reusing this pattern anywhere
+else - it does not generalize to other channels, tools, or destinations
+(warm_path_sync.py's Supabase bridge stays count-only, no names, on purpose).
 
 Stage-set logic (outreach_state, the open-stage filter) is written fresh here
 rather than imported from hooks/job_context_nudge.py: hooks/ and scripts/ are
@@ -72,11 +78,23 @@ def outreach_state(hp: dict) -> str:
     return "pending"
 
 
-def applications_pending(entries: list[dict]) -> list[dict]:
-    return [e for e in entries if e.get("stage") == "applied"]
+def worth_applying(entries: list[dict]) -> list[dict]:
+    """`considering` entries - not yet applied, an action Anna can actually
+    take today. `applied` entries are the opposite: already submitted,
+    waiting on the company - nothing for Anna to do but wait, so they don't
+    belong in an actionable digest."""
+    return [e for e in entries if e.get("stage") == "considering"]
 
 
-def warm_contacts_pending(entries: list[dict]) -> list[dict]:
+def warm_contacts_pending(entries: list[dict], threshold_days: int) -> list[tuple[dict, int | None]]:
+    """Warm-path entries that need outreach action right now: never yet
+    contacted, or contacted before but gone quiet for threshold_days+.
+    Excludes a lead Anna deliberately decided to skip - that's a different
+    nudge (see job_context_nudge.py), not a repeat push to use it.
+
+    Returns (entry, days_since_last_contact) - days is None for "never
+    contacted", so the caller can tell the two cases apart without
+    re-deriving it."""
     out = []
     for e in entries:
         if e.get("stage") not in OPEN_STAGES:
@@ -84,10 +102,32 @@ def warm_contacts_pending(entries: list[dict]) -> list[dict]:
         hp = e.get("human_path")
         if not hp or hp.get("best_rung") in (None, "none"):
             continue
-        if outreach_state(hp) != "pending":
+        if hp.get("outreach") == "skipped":
             continue
-        out.append(e)
+        last_contacted = hp.get("last_contacted")
+        if not last_contacted:
+            out.append((e, None))
+            continue
+        lc_date = last_contacted.get("date") if isinstance(last_contacted, dict) else None
+        if lc_date and OUTREACH_DATE.match(lc_date):
+            days = (date.today() - date.fromisoformat(lc_date)).days
+            if days >= threshold_days:
+                out.append((e, days))
     return out
+
+
+def _contact_label(hp: dict) -> str:
+    name = hp.get("contact_name")
+    if name:
+        return _esc_slack(name)
+    return f"({_esc_slack(hp.get('best_rung') or 'unknown rung')})"
+
+
+def _touch_status(days: int | None, last_contacted: dict | None) -> str:
+    if days is None:
+        return "not yet contacted"
+    touch_type = _esc_slack(last_contacted.get("type") or "unknown")
+    return f"last touched {last_contacted['date']} via {touch_type} ({days}d ago)"
 
 
 def stale_followups(entries: list[dict], threshold_days: int) -> list[tuple[dict, int]]:
@@ -106,30 +146,31 @@ def stale_followups(entries: list[dict], threshold_days: int) -> list[tuple[dict
 
 
 def build_blocks(entries: list[dict], threshold_days: int) -> list[dict]:
-    pending_apps = sorted(applications_pending(entries), key=lambda e: e["company"])
-    warm_pending = sorted(warm_contacts_pending(entries), key=lambda e: e["company"])
+    to_apply = sorted(worth_applying(entries), key=lambda e: e["company"])
+    warm_pending = sorted(warm_contacts_pending(entries, threshold_days),
+                           key=lambda t: t[0]["company"])
     stale = sorted(stale_followups(entries, threshold_days), key=lambda t: -t[1])
 
     header = (
-        f"🗂️ *Job search digest* — {len(pending_apps)} application(s) pending, "
+        f"🗂️ *Job search digest* — {len(to_apply)} worth applying to, "
         f"{len(warm_pending)} warm contact(s) to reach out to, "
         f"{len(stale)} stale follow-up(s)"
     )
     blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": header}}]
 
-    if pending_apps:
+    if to_apply:
         lines = "\n".join(
             f"• {_esc_slack(e['company'])} — {_esc_slack(e.get('role') or '(role unclear)')}"
-            for e in pending_apps
+            for e in to_apply
         )
         blocks.append({"type": "section", "text": {"type": "mrkdwn",
-                       "text": f"*📋 Applications pending*\n{lines}"}})
+                       "text": f"*📋 Worth applying to*\n{lines}"}})
 
     if warm_pending:
         lines = "\n".join(
-            f"• {_esc_slack(e['company'])} — warm path found "
-            f"({_esc_slack(e['human_path'].get('best_rung') or 'unknown rung')}), not yet contacted"
-            for e in warm_pending
+            f"• {_esc_slack(e['company'])} — {_contact_label(e['human_path'])} — "
+            f"{_touch_status(days, e['human_path'].get('last_contacted'))}"
+            for e, days in warm_pending
         )
         blocks.append({"type": "section", "text": {"type": "mrkdwn",
                        "text": f"*🤝 Warm contacts to reach out to*\n{lines}"}})
@@ -142,7 +183,7 @@ def build_blocks(entries: list[dict], threshold_days: int) -> list[dict]:
         blocks.append({"type": "section", "text": {"type": "mrkdwn",
                        "text": f"*⏰ Follow-up needed ({threshold_days}+ days quiet)*\n{lines}"}})
 
-    if not (pending_apps or warm_pending or stale):
+    if not (to_apply or warm_pending or stale):
         blocks.append({"type": "section", "text": {"type": "mrkdwn",
                        "text": "Nothing pending today."}})
 
@@ -152,7 +193,8 @@ def build_blocks(entries: list[dict], threshold_days: int) -> list[dict]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.strip().splitlines()[0])
     parser.add_argument("--threshold", type=int, default=FOLLOWUP_THRESHOLD_DAYS,
-                         help=f"days since last_touch before flagging (default {FOLLOWUP_THRESHOLD_DAYS})")
+                         help="days of silence before flagging an entry or a contact "
+                              f"(default {FOLLOWUP_THRESHOLD_DAYS})")
     parser.add_argument("--dry-run", action="store_true",
                          help="print the Slack blocks instead of posting them")
     args = parser.parse_args()
@@ -174,8 +216,8 @@ def main() -> int:
     r = requests.post(webhook, json={"blocks": blocks}, timeout=10)
     if r.status_code != 200:
         sys.exit(f"Slack post failed: {r.status_code} {r.text[:200]}")
-    print(f"Posted digest: {len(applications_pending(entries))} pending application(s), "
-          f"{len(warm_contacts_pending(entries))} warm contact(s), "
+    print(f"Posted digest: {len(worth_applying(entries))} worth applying to, "
+          f"{len(warm_contacts_pending(entries, args.threshold))} warm contact(s), "
           f"{len(stale_followups(entries, args.threshold))} stale follow-up(s).")
     return 0
 
