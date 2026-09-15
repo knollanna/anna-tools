@@ -37,6 +37,9 @@ anna-tools/
 ├── .claude-plugin/
 │   ├── plugin.json        the packaging contract
 │   └── marketplace.json   local marketplace so it installs at user scope
+├── .githooks/
+│   └── pre-commit      calls scripts/check_job_leak.py. Needs `git config
+│                        core.hooksPath .githooks` once per clone.
 ├── CLAUDE.md          this file
 ├── projects.json      the catalog: what exists, where, what state it's in
 ├── profiles.json      valid project archetypes, catches drift
@@ -60,7 +63,8 @@ anna-tools/
 │   └── guard_mcp_readonly.py  PreToolUse: default-deny non-allowlisted Gmail/Drive MCP calls
 ├── scripts/
 │   ├── board.py               pipeline.json -> tracker.md + board.html
-│   └── job_scaffold.py        one folder per active company, from the pipeline
+│   ├── job_scaffold.py        one folder per active company, from the pipeline
+│   └── check_job_leak.py      pre-commit check: real pipeline data outside job/
 └── job/               🔒 GITIGNORED. Never commit, publish, or put in an artifact.
 ```
 
@@ -189,6 +193,7 @@ Anna actually needs it.**
 | --- | --- |
 | Hook (`job_context_nudge.py`) | **Built.** Anna asked for a guarantee, not a habit — a prose rule that only works when someone remembers to read it is the case a hook exists for. |
 | Hook (`guard_mcp_readonly.py`) | **Built.** "Read only" for the Gmail/Drive connectors was doctrine only — neither connector has a read-only mode, so an agent's own restraint was the sole thing standing between a connected account and a full read+write+destructive grant. A hook is the same "guarantee, not a habit" argument, applied to a security boundary instead of a reminder. |
+| Git hook (`.githooks/pre-commit` → `scripts/check_job_leak.py`) | **Built.** A public-exposure audit (2026-09-15) found real job-search data — a named contact and rejection reason, a real company, a real interview date — leaked into docstrings/comments as "worked examples" across 8+ files, more than once, despite `job/` being correctly gitignored the whole time. `job/` was never the failure; a comment quoting it was. Blocks a commit whose staged diff contains a term from `job/pipeline.json` outside `job/`. **New clone setup:** `git config core.hooksPath .githooks` (not automatic — git doesn't read hooks from a tracked directory on its own). |
 | Script (`board.py`) | **Built.** Converting 60 JS objects to markdown by hand is the definition of work a model should not be doing. |
 | Skills (`/tailor-resume`, `/new-post`) | Not yet. Write one the second time you explain the same process. `/tailor-resume` is the obvious first candidate. |
 | Agents | Not yet. Add when a task reliably burns your context reading files. |
