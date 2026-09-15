@@ -25,7 +25,7 @@ import sys
 from neo4j import GraphDatabase
 from supabase import create_client
 
-from _neo4j import JOBWATCH_ENV, load_env
+from _neo4j import JOBWATCH_ENV, load_aliases, load_env
 
 
 def fetch_counts(session) -> list[dict]:
@@ -106,6 +106,47 @@ def main() -> int:
             # independent of Neo4j's (unordered) result order.
             collisions[key] = sorted(r["company"] for r in group)
 
+    # JobWatch's own spelling of a company (ATS_BOARDS, Adzuna's display_name,
+    # Getro's org name) doesn't always match the graph's canonical name from
+    # pipeline.json - e.g. the graph might carry a parent-company-qualified
+    # name ("Acme (Acme Robotics)") while JobWatch's own config uses the
+    # short form ("Acme"), so scorer.py's exact-lowercase lookup misses even
+    # though a warm-path row exists. company_aliases.json already maps a
+    # short/alternate spelling to its canonical graph name for this exact
+    # reason on the import side (graph_import.py) - reuse it here to also
+    # sync a row under each alias spelling, pointing at the same counts as
+    # its canonical company, so either spelling resolves.
+    #
+    # Matched on .lower(), not normalize(): scorer.py's own lookup (the
+    # consumer, in the sibling jobwatch repo) is exact-lowercase with no
+    # normalization, so matching this side more loosely than that would just
+    # move the mismatch rather than close it. company_aliases.json's
+    # canonical values are authoritative for the graph's actual spelling by
+    # construction - graph_import.py uses this same file to build the
+    # Company node's merge key - so an exact match is the correct bar here.
+    #
+    # rows_by_key is updated as rows are added (not a one-time snapshot):
+    # two aliases that happen to lowercase to the same spelling must not
+    # both append a "company" key already in this batch - sorted() makes
+    # which one wins deterministic across runs, and the loser is reported
+    # rather than silently dropped, same as the case-variant collisions above.
+    rows_by_key = {r["company"]: r for r in rows}
+    graph_keys = set(rows_by_key)
+    added_via_alias = []
+    alias_conflicts = []
+    for alias, canonical in sorted(load_aliases().items()):
+        alias_key, canonical_key = alias.lower(), canonical.lower()
+        if canonical_key not in rows_by_key:
+            continue
+        if alias_key in rows_by_key:
+            if alias_key not in graph_keys:
+                alias_conflicts.append((alias, canonical))
+            continue
+        new_row = {**rows_by_key[canonical_key], "company": alias_key}
+        rows.append(new_row)
+        rows_by_key[alias_key] = new_row
+        added_via_alias.append((alias, canonical))
+
     client = create_client(supabase_url, supabase_key)
     client.table("warm_path").upsert(rows, on_conflict="company").execute()
 
@@ -125,6 +166,16 @@ def main() -> int:
         print(f"  {row['company']!r}: {row['contact_count']} contact(s), {row['connection_count']} connection(s)")
     if skipped:
         print(f"\n{len(skipped)} Company node(s) with no name property skipped.")
+    if added_via_alias:
+        print(f"\n{len(added_via_alias)} alias row(s) added so JobWatch's own spelling resolves too:")
+        for alias, canonical in added_via_alias:
+            print(f"  {alias!r} -> same counts as {canonical!r}")
+    if alias_conflicts:
+        print(f"\n{len(alias_conflicts)} alias(es) skipped - their spelling already belongs to another "
+              f"row (a real company, or an earlier alias claimed it first) - fix at the source "
+              f"(company_aliases.json) if this isn't intentional:")
+        for alias, canonical in alias_conflicts:
+            print(f"  {alias!r} -> {canonical!r}")
     if stale_keys:
         print(f"{len(stale_keys)} stale row(s) no longer backed by a contact/connection removed: "
               f"{', '.join(sorted(stale_keys))}")
