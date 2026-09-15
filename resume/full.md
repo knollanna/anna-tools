@@ -165,9 +165,6 @@ AI Specialist
 
 Sourced from Anna directly or from shipped copy on annaknoll.com.
 
-- **In process, not settled:** interviewing internally for a Portfolio Leader role leading a
-  team of Forward Deployed Engineers. Panel Monday, August 17, 2026. Never write this into a
-  resume, bio, or cover letter as a held role. Pipeline detail is in `job/`.
 - **Site copy framing:** "A technical leader with a linguist's ear and an architect's rigor. I
   find the real problem, and build the teams that solve it." In plain terms: turning "that
   sounds complicated" into "let's do it."
@@ -183,10 +180,10 @@ Sourced from Anna directly or from shipped copy on annaknoll.com.
   to build custom in Salesforce. Real, professional Salesforce work; frame as co-designed, not
   built solo.
 - **Neo4j / knowledge graphs:** self-directed research, not professional/production experience —
-  dug into Neo4j while prepping for a prior application to Accrete, which needed knowledge-graph
-  familiarity. Also experimented with Neo4j's MCP (Model Context Protocol) server, connecting it
-  to Claude. Real and recent, but independent study, not a work history line. Frame it as that
-  precisely if it comes up — don't let it inflate into claimed hands-on production experience.
+  dug into Neo4j while prepping for a role that needed knowledge-graph familiarity. Also
+  experimented with Neo4j's MCP (Model Context Protocol) server, connecting it to Claude. Real
+  and recent, but independent study, not a work history line. Frame it as that precisely if it
+  comes up — don't let it inflate into claimed hands-on production experience.
 - **Family travel advisor with Fora.** Amalfi, Bangkok, London.
 - **Employee Experience products, HR/ITSM (Salesforce, 2018-2022):** the specialist team she
   stood up and led (see Principal Solution Engineer/Team Lead role above) was Salesforce's own
