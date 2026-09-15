@@ -117,8 +117,8 @@ When checking Gmail for a rejection (an objection-classification backfill, or ju
 `"not moving forward"`. Real rejection emails vary the words *around* a phrase more than
 the phrase itself — "we will **not be** moving forward" doesn't contain the substring "not
 moving forward" and a phrase-locked query silently misses it, with no error, no empty-result
-warning distinguishing "nothing to find" from "the query was too rigid." A real
-rejection was missed exactly this way before this note existed.
+warning distinguishing "nothing to find" from "the query was too rigid." A real rejection
+was missed exactly this way before this note existed.
 
 Search on the shorter, more stable fragment instead (`"moving forward"`, not `"not moving
 forward"`), or drop the phrase entirely for single strong words (`reject`, `rejected`,
