@@ -148,7 +148,7 @@ def gated_hits_missing_human_path(entries: list[dict], hits: list[str]) -> list[
     hits come from matched_companies(), which strips a trailing parenthetical
     (companies() does the same PARENTHETICAL.sub before adding a name to the
     set) so a heading like "Meta (Facebook)" still matches a bare mention
-    of "Cursor". A pipeline entry's raw `company` field keeps the parenthetical,
+    of "Meta". A pipeline entry's raw `company` field keeps the parenthetical,
     so it must be stripped the same way before comparing against hits — an
     exact-string compare here would silently never match any such company."""
     by_company: dict[str, list[str]] = {}
