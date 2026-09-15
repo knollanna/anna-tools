@@ -228,6 +228,44 @@ was `"skipped"` (a different nudge — worth another pass for a stronger lead,
 not a repeat push to contact someone already declined) — plus a matching
 global count for pending outreach across every active-stage entry.
 
+### Last-touch tracking
+
+An entry can carry `last_touch` — a plain `"YYYY-MM-DD"` string, sibling to
+`human_path`/`objection`. Same discipline as everything else here: get the
+date from `date`, never invent one, and update it as part of whatever turn
+actually touched the entry (a call, a note append, a stage change) — by hand
+or by a session.
+
+No entry starts with one, and there's no backfill — inventing 100 dates
+nobody actually recorded would violate the same rule this field exists to
+uphold. It fills in naturally as entries get touched going forward.
+`scripts/job_digest.py` (see "Daily digest" below) uses it to flag an entry
+that's gone quiet; an entry with no `last_touch` never gets flagged; that's
+"never checked," not "confirmed fine."
+
+## Daily digest
+
+`python3 scripts/job_digest.py` posts a once-a-day Slack summary: applications
+sitting at `applied`, warm contacts found but not yet reached out to (same
+computation `job_context_nudge.py` already does reactively, here pushed
+proactively), and entries with `last_touch` 7+ days old (`--threshold` to
+override). Company, role, stage, and dates only — never a contact's name
+(`human_path.best_rung`'s category, not `human_path.summary`, which routinely
+names one), never comp, never note text. The same "must never leave this
+machine unnamed-contact-free" line that shapes `warm_path_sync.py` applies
+here to a second, different slice of `pipeline.json` leaving the machine.
+
+Meant to run on a schedule, not interactively — `job/pipeline.json` can't
+leave this machine, so unlike JobWatch this can't run on a cron host; it runs
+locally via macOS `launchd`. Setup: copy
+`scripts/launchd/com.annaknoll.job-digest.plist.example` to
+`~/Library/LaunchAgents/`, fill in the machine-specific paths (comments in the
+file walk through it), and `launchctl load` it. Needs its own Slack webhook —
+a channel of its own, not JobWatch's — set as `JOB_DIGEST_SLACK_WEBHOOK_URL`
+in `.env`. `--dry-run` prints the built message instead of posting it, for
+checking the content (and that nothing sensitive snuck in) before it ever
+reaches Slack.
+
 ## JobWatch integration
 
 JobWatch (the nightly scraper, `../jobwatch/`) runs on Render with a
