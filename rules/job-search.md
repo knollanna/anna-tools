@@ -228,6 +228,81 @@ was `"skipped"` (a different nudge — worth another pass for a stronger lead,
 not a repeat push to contact someone already declined) — plus a matching
 global count for pending outreach across every active-stage entry.
 
+### Named contact and touch history
+
+`human_path` can also carry `contact_name` (the primary/strongest contact for
+this warm path) and `last_contacted` — `null` (never touched) or
+`{"date": "YYYY-MM-DD", "type": "..."}` (`type` is free text: `email`,
+`linkedin`, `call`, `interview`, `text`, `in-person`, whatever the actual
+channel was). Both purely additive, sibling to `outreach` rather than
+replacing it — `outreach` stays the coarse pending/contacted/skipped gate
+`job_context_nudge.py`'s hook logic reads; `last_contacted` is the finer
+"when, and how" detail a Slack digest needs to actually be actionable. Same
+rules as everywhere else: get the date from `date`, never invent a name or a
+date, update it as part of whatever turn actually made contact.
+
+No backfill — an entry with no `contact_name`/`last_contacted` yet just shows
+the rung category instead of a name in the digest, same soft-launch posture
+as `last_touch` below. `scripts/job_digest.py`'s "Warm contacts to reach out
+to" section reads these.
+
+**This is a deliberate, scoped exception to "named contacts never leave this
+machine."** `job_digest.py` posts to a Slack webhook/channel Anna created and
+fully controls (no other installed app has access, confirmed 2026-09-15) —
+the standing rule still holds for anything else: git, artifacts, any other
+third-party service. Don't extend this exception to a different channel or
+tool without asking first.
+
+### Last-touch tracking
+
+An entry can carry `last_touch` — a plain `"YYYY-MM-DD"` string, sibling to
+`human_path`/`objection`. Same discipline as everything else here: get the
+date from `date`, never invent one, and update it as part of whatever turn
+actually touched the entry (a call, a note append, a stage change) — by hand
+or by a session.
+
+No entry starts with one, and there's no backfill — inventing 100 dates
+nobody actually recorded would violate the same rule this field exists to
+uphold. It fills in naturally as entries get touched going forward.
+`scripts/job_digest.py` (see "Daily digest" below) uses it to flag an entry
+that's gone quiet; an entry with no `last_touch` never gets flagged; that's
+"never checked," not "confirmed fine."
+
+### Posting link
+
+An entry can carry `url` — the posting's live link, a plain string sibling to
+`role`/`company`. Not previously tracked: JD files under `jd/` sometimes
+capture a `source:` line, sometimes don't, and it's never been structured on
+the entry itself. No backfill; `scripts/job_digest.py`'s "Worth applying to"
+section links the entry's company/role text when `url` is present and falls
+back to plain text when it isn't. A posting can go stale or the req can close
+— that's still true of the link the way it was true of the saved JD text.
+
+## Daily digest
+
+`python3 scripts/job_digest.py` posts a once-a-day Slack summary: entries at
+`considering` worth actually applying to, warm contacts found but not yet
+reached out to — by name, with `human_path.contact_name`/`last_contacted` (see
+"Named contact and touch history" above) — and entries with `last_touch` 7+
+days old (`--threshold` to override). Company, role, stage, dates, and a
+contact's name where one's on file — still never comp, never note text; the
+contact-name exception is scoped specifically to this one webhook/channel
+Anna controls, not a general loosening of "must never leave this machine"
+(see the exception note above). `warm_path_sync.py`'s Supabase bridge is a
+different destination with a different owner (JobWatch's Render deploy) and
+stays count-only, no names — the exception here doesn't extend there.
+
+Meant to run on a schedule, not interactively — `job/pipeline.json` can't
+leave this machine, so unlike JobWatch this can't run on a cron host; it runs
+locally via macOS `launchd`. Setup: copy
+`scripts/launchd/com.annaknoll.job-digest.plist.example` to
+`~/Library/LaunchAgents/`, fill in the machine-specific paths (comments in the
+file walk through it), and `launchctl load` it. Needs its own Slack webhook —
+a channel of its own, not JobWatch's — set as `JOB_DIGEST_SLACK_WEBHOOK_URL`
+in `.env`. `--dry-run` prints the built message instead of posting it, for
+checking the content (and that nothing sensitive snuck in) before it ever
+reaches Slack.
+
 ## JobWatch integration
 
 JobWatch (the nightly scraper, `../jobwatch/`) runs on Render with a

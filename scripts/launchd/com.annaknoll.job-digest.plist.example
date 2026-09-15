@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Template for scripts/job_digest.py's daily schedule. This is per-machine
+  config - copy it, fill in the placeholders, and load it. git never sees the
+  filled-in version (the same reason jobwatch/farewatch ship .env.example
+  instead of .env).
+
+  Setup:
+    mkdir -p ~/Library/Logs/anna-tools
+    cp scripts/launchd/com.annaknoll.job-digest.plist.example \
+       ~/Library/LaunchAgents/com.annaknoll.job-digest.plist
+    # edit the REPLACE_ME_REPO_PATH / REPLACE_ME_HOME placeholders below for this machine
+    launchctl load ~/Library/LaunchAgents/com.annaknoll.job-digest.plist
+
+  Runs daily at 8:00am local time (edit Hour/Minute to change). Logs go to
+  the Log/ paths below - check those first if a run doesn't show up in Slack.
+
+  Reload after editing: launchctl unload then launchctl load again.
+  Run once immediately to test: launchctl start com.annaknoll.job-digest
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.annaknoll.job-digest</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>REPLACE_ME_REPO_PATH/.venv/bin/python3</string>
+        <string>REPLACE_ME_REPO_PATH/scripts/job_digest.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>REPLACE_ME_REPO_PATH</string>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>8</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <!-- Outside the repo on purpose - a log directory inside a tracked repo
+         risks an accidental `git add -A` staging a log line. -->
+    <key>StandardOutPath</key>
+    <string>REPLACE_ME_HOME/Library/Logs/anna-tools/job-digest.log</string>
+    <key>StandardErrorPath</key>
+    <string>REPLACE_ME_HOME/Library/Logs/anna-tools/job-digest.err.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
