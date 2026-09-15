@@ -61,6 +61,12 @@ def _esc_slack(value):
             .replace(">", "&gt;"))
 
 
+def _esc_slack_url(url):
+    """Same, plus a percent-encoded pipe: a literal '|' in the URL would end
+    the <url|label> link target early and swallow the rest as label text."""
+    return _esc_slack(url).replace("|", "%7C")
+
+
 def load_entries() -> list[dict]:
     data = json.loads(PIPELINE.read_text(encoding="utf-8"))
     return data["entries"]
@@ -116,6 +122,12 @@ def warm_contacts_pending(entries: list[dict], threshold_days: int) -> list[tupl
     return out
 
 
+def _apply_line(e: dict) -> str:
+    label = f"{_esc_slack(e['company'])} — {_esc_slack(e.get('role') or '(role unclear)')}"
+    url = e.get("url")
+    return f"<{_esc_slack_url(url)}|{label}>" if url else label
+
+
 def _contact_label(hp: dict) -> str:
     name = hp.get("contact_name")
     if name:
@@ -159,10 +171,7 @@ def build_blocks(entries: list[dict], threshold_days: int) -> list[dict]:
     blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": header}}]
 
     if to_apply:
-        lines = "\n".join(
-            f"• {_esc_slack(e['company'])} — {_esc_slack(e.get('role') or '(role unclear)')}"
-            for e in to_apply
-        )
+        lines = "\n".join(f"• {_apply_line(e)}" for e in to_apply)
         blocks.append({"type": "section", "text": {"type": "mrkdwn",
                        "text": f"*📋 Worth applying to*\n{lines}"}})
 
