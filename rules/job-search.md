@@ -268,6 +268,16 @@ uphold. It fills in naturally as entries get touched going forward.
 that's gone quiet; an entry with no `last_touch` never gets flagged; that's
 "never checked," not "confirmed fine."
 
+### Posting link
+
+An entry can carry `url` — the posting's live link, a plain string sibling to
+`role`/`company`. Not previously tracked: JD files under `jd/` sometimes
+capture a `source:` line, sometimes don't, and it's never been structured on
+the entry itself. No backfill; `scripts/job_digest.py`'s "Worth applying to"
+section links the entry's company/role text when `url` is present and falls
+back to plain text when it isn't. A posting can go stale or the req can close
+— that's still true of the link the way it was true of the saved JD text.
+
 ## Daily digest
 
 `python3 scripts/job_digest.py` posts a once-a-day Slack summary: entries at
