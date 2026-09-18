@@ -16,8 +16,12 @@ guard_mcp_readonly.py.
 Checks only ADDED lines in the staged diff (not the whole file — an
 already-committed false positive shouldn't re-block every future commit
 to that file), excludes job/ itself (where this data belongs), and
-extracts what counts as "real" directly from job/pipeline.json so the
-check tracks the data instead of a hardcoded, staleness-prone list.
+extracts what counts as "real" directly from job/pipeline.json — walking
+every string value in the pipeline at any depth, rather than a fixed
+field list — so the check tracks the data (and the schema, as it grows)
+instead of a hardcoded, staleness-prone list. A field-list version of
+this missed a whole nested object (human_path) added after the fact;
+see the 2026-09-17 fix commit for the real leak that caused.
 
 Deliberately noisy over silent: a false positive costs one look at a
 diff; a missed real leak costs a public repo. Override for a confirmed
@@ -51,6 +55,35 @@ BIGRAM_RE = re.compile(r"\b[A-Z][a-z]{2,}(?:\.)? [A-Z][a-zA-Z\-]{2,}\b")
 # ("In UI", "Data Cloud") to be worth blocking a commit over.
 MIN_TERM_LEN = 5
 
+# Fields whose whole (trimmed) value is a term on its own, not just what
+# CONTACT_RE/BIGRAM_RE can pull out of it - a single-word company like
+# "Acme" or "Initech" never matches BIGRAM_RE, and a company field is never
+# itself the "Name (detail)" shape CONTACT_RE expects. Deliberately small
+# and named by role (identity fields), not by where they live in the
+# schema - unlike a per-nesting-level field list, this doesn't need
+# updating when pipeline.json grows a new nested object.
+IDENTITY_FIELDS = {"company", "contact_name"}
+
+
+def _walk_strings(obj):
+    """Yield every (key, string_value) pair for every string leaf under obj,
+    at any depth. A prior version of this function held an explicit list of
+    which fields to check (contacts, note, notes) and missed an entire
+    nested object (human_path) added later for the warm-path/digest work -
+    a real leak sat in a field this function didn't know to look at until
+    someone noticed by hand. Walking every string leaf, regardless of field
+    name or nesting, means the next schema change is covered automatically
+    instead of needing this function edited again."""
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            if isinstance(value, str):
+                yield key, value
+            else:
+                yield from _walk_strings(value)
+    elif isinstance(obj, list):
+        for item in obj:
+            yield from _walk_strings(item)
+
 
 def load_sensitive_terms() -> set[str]:
     if not PIPELINE.exists():
@@ -62,34 +95,16 @@ def load_sensitive_terms() -> set[str]:
 
     terms = set()
     for e in data.get("entries", []):
-        company = (e.get("company") or "").strip()
-        if company:
-            terms.add(company)
-        contacts = e.get("contacts") or ""
-        for name, _detail in CONTACT_RE.findall(contacts):
-            name = name.strip().rstrip(",")
-            if name:
-                terms.add(name)
-        for field in ("note", "notes"):
-            text = e.get(field) or ""
-            terms.update(BIGRAM_RE.findall(text))
-
-        # human_path grew its own contact_name/summary/note fields after this
-        # function was first written (warm-path and digest work) - missed
-        # entirely until a real name in human_path.summary leaked into a
-        # docstring the top-level-only version of this function couldn't see.
-        # Same extraction as above, just against the nested object.
-        hp = e.get("human_path") or {}
-        contact_name = (hp.get("contact_name") or "").strip()
-        if contact_name:
-            terms.add(contact_name)
-        for field in ("summary", "note"):
-            text = hp.get(field) or ""
-            terms.update(BIGRAM_RE.findall(text))
+        for key, text in _walk_strings(e):
+            if key in IDENTITY_FIELDS:
+                value = text.strip()
+                if value:
+                    terms.add(value)
             for name, _detail in CONTACT_RE.findall(text):
                 name = name.strip().rstrip(",")
                 if name:
                     terms.add(name)
+            terms.update(BIGRAM_RE.findall(text))
 
     return {t for t in terms if len(t) >= MIN_TERM_LEN}
 
