@@ -2,8 +2,8 @@
 """Suggest contact_name candidates for pipeline entries with a found warm
 path but no contact_name recorded yet.
 
-human_path.summary already names a contact when one was found - "Ed
-Sandoval, Senior Product Manager AI - LinkedIn connection" - but as free
+human_path.summary already names a contact when one was found - "Jamie
+Rivera, Senior Product Manager AI - LinkedIn connection" - but as free
 prose, not the structured contact_name field job_digest.py actually reads.
 This doesn't guess *which* name is the primary contact when a summary lists
 several (a later warm_path.py pass can turn up more than one lead) - it
