@@ -49,14 +49,26 @@ FOOTER_RE = re.compile(r"\n?.*Generated with \[Claude Code\].*", re.IGNORECASE)
 # (Neo4j is anna-tools'/FareWatch's own database; Stripe is a generic
 # secret-format reference in check_secrets.py; Google is Drive/Calendar/Cloud/
 # Fonts referenced constantly in this codebase's own docs; Employee Experience
-# is a Salesforce product name from resume/full.md's own career history,
-# in-scope per that file's own rule). Excluded because in THIS checker's
-# actual use — reviewing a PR description before submitting — they fire on
-# ordinary narration far more often than on an actual leak, and a check
-# ignored out of habit protects nothing. Add to sparingly: each entry trades
-# away real coverage of that one term everywhere in the pipeline, not just in
-# the generic/resume sense a given PR happened to use it in.
-ALLOWLIST = {"Neo4j", "Stripe", "Google", "Employee Experience"}
+# and Agentforce/Agentforce POC are Salesforce product names from
+# resume/full.md's own career history, in-scope per that file's own rule;
+# LinkedIn is the generic platform, referenced constantly in the warm-path
+# tooling's own docs; FareWatch is Anna's own public, deployed project;
+# "Neo4j research" is check_job_leak.py's own load_sensitive_terms()
+# describing the file that held an earlier, now-fixed leak, not a new one).
+# Excluded because in THIS checker's actual use — reviewing a PR description
+# before submitting — they fire on ordinary narration far more often than on
+# an actual leak, and a check ignored out of habit protects nothing. Grew
+# sharply (four terms to eleven) when check_job_leak.py's term extraction
+# switched from a fixed field list to walking every string in the pipeline —
+# broader real coverage, and broader incidental overlap with this
+# codebase's own generic vocabulary, in the same move. Add to sparingly:
+# each entry trades away real coverage of that one term everywhere in the
+# pipeline, not just in the generic/resume sense a given PR happened to use
+# it in.
+ALLOWLIST = {
+    "Neo4j", "Neo4j research", "Stripe", "Google", "Employee Experience",
+    "Agentforce", "Agentforce POC", "LinkedIn", "FareWatch",
+}
 
 
 def find_hits(text: str, terms: set[str]) -> list[str]:

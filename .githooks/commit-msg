@@ -1,0 +1,10 @@
+#!/bin/sh
+# Blocks a commit whose MESSAGE (not the diff — see .githooks/pre-commit
+# for that) contains real job-search data. Logic lives in
+# scripts/check_commit_msg_leak.py — see that file for the why.
+#
+# This only runs if core.hooksPath points here. A fresh clone needs to
+# opt in once:
+#   git config core.hooksPath .githooks
+
+exec python3 "$(git rev-parse --show-toplevel)/scripts/check_commit_msg_leak.py" "$1"
