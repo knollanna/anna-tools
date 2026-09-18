@@ -128,6 +128,60 @@ sweep with loose terms, checked against company names already in the pipeline, c
 than one exact-phrase query per company. Run this against `applied`-stage entries too, not
 just closed ones — a rejection can land before anyone updates the stage.
 
+**Even a "stable" fragment isn't safe from verb-form drift.** A second real miss: `"moving
+forward"` in the OR list didn't catch a real rejection reading "we have decided **not to move
+forward** with your application" — `move` vs `moving` is a different word, not a substring
+match, so a fragment-based query is exactly as brittle as a full-phrase one once the verb form
+shifts. Cover the forms that actually show up (`move forward`, `moving forward`, `moved
+forward`) as separate OR terms rather than trusting one to catch the others.
+
+**For a known, active `applied`-stage company, don't rely on keyword matching at all** —
+search `<company name> newer_than:Xd` with no reject-language filter and read what comes back.
+That's narrower in scope (one company, a date window) but far more reliable than any keyword
+list, and it's how that rejection was actually found after the broad sweep missed it.
+Reserve the OR-term sweep for "check the whole mailbox for anything," and reserve the
+company+date search for "did company X ever get back to me."
+
+## Pre-interview NotebookLM briefing
+
+Before an interview with a company (not just the first call — worth redoing or refreshing
+ahead of a later round too, given how fast a JD or company situation can change), Anna builds a
+NotebookLM notebook and generates its podcast from:
+
+- The job description
+- The company website and product pages
+- Recent blog posts and press
+- A couple of competitor-comparison articles
+
+Building the actual notebook and podcast in NotebookLM is Anna's own step. **Gathering the
+source links is a session's job, on request** — not a silent background automation (finding
+the *right* recent post or a real competitor-comparison article takes live judgment a
+scheduled script can't reliably make; see `rules/data-sources.md` on why JobWatch's own cron
+deliberately avoids unattended scraping/searching). When Anna asks for this (e.g. "gather
+NotebookLM sources for <Company>"), a session:
+
+1. Points to the JD already saved in that company's `jd/` folder.
+2. Finds the company's homepage and relevant product pages.
+3. Finds 2-3 recent blog posts or press mentions.
+4. Finds 1-2 competitor-comparison articles.
+5. Saves the compiled list as `job/companies/<slug>/research/YYYY-MM-DD-notebooklm-sources.md`,
+   so a later round's prep starts from what's already gathered instead of from zero.
+
+A session's job absent that explicit ask is just the reminder: flag that this is part of the
+cadence when an interview gets scheduled or prep starts.
+
+## Resume title, matched to the role
+
+Before an application goes out, the resume's title line — currently "Enterprise Solutions
+Architect Leader | AI & NLP | Healthcare & Life Sciences" — gets updated to echo the actual job
+title Anna is applying for, rather than staying generic. A session's job here is the same shape
+as the NotebookLM reminder above: **flag it as part of the apply step, without being asked**,
+before an entry moves to `applied` — don't wait for Anna to ask. If a session is drafting or
+reviewing an application (cover letter, "why this role" answer, etc.), propose the matched
+title line as part of that same pass rather than a separate ask later. The canonical resume
+lives outside this repo (see "Other resume versions on disk" in `resume/full.md`) — a session
+proposes the title text, Anna is the one who actually edits her resume file before submitting.
+
 ## What to capture
 
 Match the existing house style. It is dense on purpose and it works.

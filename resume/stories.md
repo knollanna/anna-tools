@@ -131,11 +131,21 @@ is proudest of. Who maintains it now.
 
 ---
 
+### Why forward-deployed work, why now
+**Use for:** why-you, motivation for an IC/FDE move after years in management
+**Known (per Anna, Sept 16, 2026):** the pull is a blend of wanting to be closer to the AI
+build itself right now rather than managing people managing it, plus a preference for owning
+fewer, deeper engagements over managing a team that owns them. A **founding FDE seat**
+specifically appeals because standing up a function from nothing is exactly the shape of work
+she's already done and enjoys — the specialist team from scratch, the Agentforce POC program
+built from zero.
+**Needs:** a specific moment or realization that crystallized this, if one exists — right now
+it's a stated preference, not yet a story with a scene.
+
 ## Prompts for stories not yet visible anywhere
 
 - A time she was wrong in front of a customer.
 - A POC or project she killed, or should have killed sooner.
 - The hardest disagreement with a peer or a manager, and how it ended.
 - Something she changed her mind about in the last two years.
-- Why she is moving into forward-deployed work now.
 - A time the customer's stated problem was the wrong problem, and what it cost to reframe it.
