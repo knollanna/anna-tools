@@ -184,6 +184,15 @@ Sourced from Anna directly or from shipped copy on annaknoll.com.
   experimented with Neo4j's MCP (Model Context Protocol) server, connecting it to Claude. Real
   and recent, but independent study, not a work history line. Frame it as that precisely if it
   comes up — don't let it inflate into claimed hands-on production experience.
+- **InQuira was a startup when Anna joined.** Founding (2002, merger of AnswerFriend and
+  Electric Knowledge) and the Oracle acquisition date (closed July 28, 2011) are independently
+  confirmed and match the Professional experience dates above. **Headcount is not verified** —
+  Anna's own recollection (Sept 16, 2026) was a little over 100 people at hire in 2006, growing
+  toward closer to 1,000 by the 2011 acquisition, but the one public figure found (PitchBook,
+  undated, likely stale) lists InQuira at 110 total employees — notably smaller, not a
+  confirmation. Safe to say plainly: "joined InQuira as an early-stage company in 2006, it grew
+  substantially before Oracle acquired it in 2011" — don't cite a specific headcount number in
+  an interview, since neither her memory nor the one source found can be treated as settled.
 - **Family travel advisor with Fora.** Amalfi, Bangkok, London.
 - **Employee Experience products, HR/ITSM (Salesforce, 2018-2022):** the specialist team she
   stood up and led (see Principal Solution Engineer/Team Lead role above) was Salesforce's own
