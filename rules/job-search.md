@@ -300,6 +300,22 @@ the rung category instead of a name in the digest, same soft-launch posture
 as `last_touch` below. `scripts/job_digest.py`'s "Warm contacts to reach out
 to" section reads these.
 
+**`human_path` tracks exactly one contact per entry, on purpose — a company
+with several real leads (some entries had five or six) still gets one primary
+in `contact_name`, not a list.**
+The rest live in the free-text `contacts` field, same as always. To keep
+those visible in the digest without a schema change: **every contact in
+`contacts` who hasn't been reached out to yet gets the literal phrase "not
+yet contacted" attached to their mention — except the primary, whose status
+lives in `human_path` instead and should never carry that phrase on itself.**
+`job_digest.py` counts occurrences of the phrase and appends `(+N others
+untouched)` to the entry's line. This only works if the phrase stays exact
+and the primary's own mention never duplicates it — when the primary gets
+contacted, update their clause in `contacts` too (not just `human_path`), or
+the count silently overcounts by one. (One entry hit exactly this: the
+primary was marked contacted in `human_path` but their own free-text mention
+still read "not yet contacted" — fixed Sept 18, 2026.)
+
 **This is a deliberate, scoped exception to "named contacts never leave this
 machine."** `job_digest.py` posts to a Slack webhook/channel Anna created and
 fully controls (no other installed app has access, confirmed 2026-09-15) —
@@ -321,6 +337,19 @@ uphold. It fills in naturally as entries get touched going forward.
 `scripts/job_digest.py` (see "Daily digest" below) uses it to flag an entry
 that's gone quiet; an entry with no `last_touch` never gets flagged; that's
 "never checked," not "confirmed fine."
+
+### Board ordering
+
+`scripts/board.py` sorts two columns. **Applied: oldest application first**, using the date in
+the note's own `APPLIED <date>` text (`Sept 8, 2026` or `2026-09-08`; a `REAPPLIED` date counts,
+and the latest one wins). Log the date in that form when an application goes out, or the entry
+sorts last and `board.py` names it in its output. **Considering and Interviewing: soonest
+`next_action` first.** `next_action` is an optional `{"date": "YYYY-MM-DD", "time": "HH:MM",
+"what": "..."}` on the entry (`time` is optional and breaks ties within a day). For Considering
+it's the next thing Anna plans to do (send outreach, decide, apply); for Interviewing it's the
+next scheduled interview or call, so **set it when an interview is confirmed and move it forward
+after each one happens**. Entries without one sort last. Same discipline as `last_touch`: get
+the date from `date`, never invent one.
 
 ### Posting link
 

@@ -19,7 +19,9 @@ Everything it touches is under job/, which is gitignored.
 import argparse
 import html as html_mod
 import json
+import re
 import sys
+from datetime import date
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -36,6 +38,72 @@ def load() -> dict:
     return json.loads(DATA.read_text(encoding="utf-8"))
 
 
+MONTHS = {m: i for i, m in enumerate(
+    ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"], 1)}
+_DATE = (r"(?:(?P<mon>[A-Za-z]{3})[a-z]*\.? (?P<day>\d{1,2}),? (?P<year>\d{4})"
+         r"|(?P<iso>\d{4}-\d{2}-\d{2}))")
+APPLIED_STRONG = re.compile(r"\b(?:RE)?(?:APPLIED|Applied)\b[^.]{0,40}?" + _DATE)
+APPLIED_WEAK = re.compile(r"\bapplied\b[^.]{0,40}?" + _DATE)
+
+
+def _to_date(m: re.Match) -> date | None:
+    try:
+        if m.group("iso"):
+            return date.fromisoformat(m.group("iso"))
+        mon = MONTHS.get(m.group("mon").lower())
+        return date(int(m.group("year")), mon, int(m.group("day"))) if mon else None
+    except ValueError:
+        return None
+
+
+def applied_date(e: dict) -> date | None:
+    """Read from the note's own 'APPLIED <date>' text - never guessed. Prefers the
+    capitalized form sessions write when logging the event; takes the latest such
+    date, since a reapplication is the one still pending. None if the note has none."""
+    note = e.get("note", "")
+    for pat in (APPLIED_STRONG, APPLIED_WEAK):
+        found = [d for m in pat.finditer(note) if (d := _to_date(m))]
+        if found:
+            return max(found)
+    return None
+
+
+def next_action_date(e: dict) -> date | None:
+    na = e.get("next_action")
+    try:
+        return date.fromisoformat(na["date"]) if isinstance(na, dict) else None
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def next_action_key(e: dict) -> tuple:
+    """(undated, date, time) - optional "HH:MM" breaks ties within a day."""
+    d = next_action_date(e)
+    time = e["next_action"].get("time", "") if d else ""
+    return (d is None, d or date.max, time)
+
+
+def sort_rows(key: str, rows: list[dict]) -> list[dict]:
+    """Applied: oldest application first. Considering and Interviewing: soonest
+    next_action first. Undated entries go last, in their existing order
+    (sorted() is stable)."""
+    if key == "applied":
+        return sorted(rows, key=lambda e: (applied_date(e) is None, applied_date(e) or date.max))
+    if key in ("considering", "interviewing"):
+        return sorted(rows, key=next_action_key)
+    return rows
+
+
+def card_date_line(key: str, e: dict) -> str:
+    if key == "applied" and (d := applied_date(e)):
+        return f"Applied {d.strftime('%b')} {d.day}, {d.year}"
+    if key in ("considering", "interviewing") and (d := next_action_date(e)):
+        na = e["next_action"]
+        when = f"{d.strftime('%a %b')} {d.day}" + (f" {na['time']}" if na.get("time") else "")
+        return f"Next: {when}" + (f" — {na['what']}" if na.get("what") else "")
+    return ""
+
+
 def grouped(data: dict) -> list[tuple[str, str, list[dict]]]:
     order = [s["key"] for s in data["stages"]]
     labels = {s["key"]: s["label"] for s in data["stages"]}
@@ -43,7 +111,7 @@ def grouped(data: dict) -> list[tuple[str, str, list[dict]]]:
     for e in data["entries"]:
         by.setdefault(e.get("stage", "unknown"), []).append(e)
     keys = order + [k for k in by if k not in order]
-    return [(k, labels.get(k, k), by[k]) for k in keys if by.get(k)]
+    return [(k, labels.get(k, k), sort_rows(k, by[k])) for k in keys if by.get(k)]
 
 
 def render_md(data: dict) -> str:
@@ -64,6 +132,8 @@ def render_md(data: dict) -> str:
         for e in rows:
             lines.append(f"### {e['company']} — {e['role'] or '?'}")
             lines.append("")
+            if dl := card_date_line(key, e):
+                lines += [f"**{dl}**", ""]
             if e.get("folder"):
                 lines += [f"📁 **`job/{e['folder']}/`** — the source of truth for this company.", ""]
             if e.get("contacts"):
@@ -90,10 +160,12 @@ def render_html(data: dict) -> str:
                 f'{"…" if len(e.get("contacts", "")) > 120 else ""}</p>'
                 if e.get("contacts") else ""
             )
+            dl = card_date_line(key, e)
+            dline = f'<p class="d">{html_mod.escape(dl)}</p>' if dl else ""
             cards.append(
                 f'<article class="card"><h3>{html_mod.escape(e["company"])}</h3>'
                 f'<p class="r">{html_mod.escape(e["role"] or "—")}</p>'
-                f"{folder}{contacts}"
+                f"{dline}{folder}{contacts}"
                 f'<p class="n">{short}</p></article>'
             )
         live = " live" if key in LIVE else ""
@@ -137,6 +209,7 @@ def render_html(data: dict) -> str:
   .col.live .card{{border-left:3px solid var(--acc)}}
   .card h3{{font-size:.92rem;margin:0 0 2px;letter-spacing:-.01em}}
   .r{{font-size:.8rem;color:var(--muted);margin:0 0 6px}}
+  .d{{font-family:var(--mono);font-size:.7rem;color:var(--acc);margin:0 0 6px}}
   .f{{font-family:var(--mono);font-size:.68rem;color:var(--sig);margin:0 0 6px}}
   .c{{font-size:.72rem;color:var(--muted);margin:0 0 6px;padding-left:8px;
       border-left:2px solid var(--rule)}}
@@ -179,6 +252,10 @@ def main() -> int:
     counts = " · ".join(f"{label} {len(rows)}" for _, label, rows in grouped(data))
     print(f"{len(data['entries'])} entries -> {OUT_MD.name}, {OUT_HTML.name}")
     print(f"  {counts}")
+    undated = [e["company"] for e in data["entries"]
+               if e.get("stage") == "applied" and applied_date(e) is None]
+    if undated:
+        print(f"  no readable applied date, sorted last: {', '.join(undated)}")
     return 0
 
 

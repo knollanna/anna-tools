@@ -94,9 +94,13 @@ def worth_applying(entries: list[dict]) -> list[dict]:
 
 def warm_contacts_pending(entries: list[dict], threshold_days: int) -> list[tuple[dict, int | None]]:
     """Warm-path entries that need outreach action right now: never yet
-    contacted, or contacted before but gone quiet for threshold_days+.
-    Excludes a lead Anna deliberately decided to skip - that's a different
-    nudge (see job_context_nudge.py), not a repeat push to use it.
+    contacted, contacted before but gone quiet for threshold_days+, or with
+    a still-untouched secondary contact in the free-text `contacts` field
+    (see "Warm-path check" in rules/job-search.md) even if the primary
+    itself was touched recently - a company isn't done just because its
+    first lead was used. Excludes a lead Anna deliberately decided to skip -
+    that's a different nudge (see job_context_nudge.py), not a repeat push
+    to use it.
 
     Returns (entry, days_since_last_contact) - days is None for "never
     contacted", so the caller can tell the two cases apart without
@@ -110,6 +114,7 @@ def warm_contacts_pending(entries: list[dict], threshold_days: int) -> list[tupl
             continue
         if hp.get("outreach") == "skipped":
             continue
+        untouched = _untouched_count(e.get("contacts", ""))
         last_contacted = hp.get("last_contacted")
         if not last_contacted:
             out.append((e, None))
@@ -117,7 +122,7 @@ def warm_contacts_pending(entries: list[dict], threshold_days: int) -> list[tupl
         lc_date = last_contacted.get("date") if isinstance(last_contacted, dict) else None
         if lc_date and OUTREACH_DATE.match(lc_date):
             days = (date.today() - date.fromisoformat(lc_date)).days
-            if days >= threshold_days:
+            if days >= threshold_days or untouched > 0:
                 out.append((e, days))
     return out
 
@@ -140,6 +145,24 @@ def _touch_status(days: int | None, last_contacted: dict | None) -> str:
         return "not yet contacted"
     touch_type = _esc_slack(last_contacted.get("type") or "unknown")
     return f"last touched {last_contacted['date']} via {touch_type} ({days}d ago)"
+
+
+def _untouched_count(contacts_text: str) -> int:
+    """human_path tracks exactly one contact per entry, but the free-text
+    `contacts` field often names several - every one of them still pending
+    gets the literal phrase "not yet contacted" (see "Warm-path check" in
+    rules/job-search.md), and the primary's own mention never carries it,
+    since that status lives in human_path instead. Counting the phrase - not
+    naming who - keeps this on the same "count only, no prose" privacy
+    footing as everything else this digest sends."""
+    return (contacts_text or "").lower().count("not yet contacted")
+
+
+def _untouched_suffix(contacts_text: str) -> str:
+    n = _untouched_count(contacts_text)
+    if n == 0:
+        return ""
+    return f" (+{n} other{'s' if n != 1 else ''} untouched)"
 
 
 def stale_followups(entries: list[dict], threshold_days: int) -> list[tuple[dict, int]]:
@@ -179,6 +202,7 @@ def build_blocks(entries: list[dict], threshold_days: int) -> list[dict]:
         lines = "\n".join(
             f"• {_esc_slack(e['company'])} — {_contact_label(e['human_path'])} — "
             f"{_touch_status(days, e['human_path'].get('last_contacted'))}"
+            f"{_untouched_suffix(e.get('contacts', ''))}"
             for e, days in warm_pending
         )
         blocks.append({"type": "section", "text": {"type": "mrkdwn",
