@@ -74,6 +74,23 @@ def load_sensitive_terms() -> set[str]:
             text = e.get(field) or ""
             terms.update(BIGRAM_RE.findall(text))
 
+        # human_path grew its own contact_name/summary/note fields after this
+        # function was first written (warm-path and digest work) - missed
+        # entirely until a real name in human_path.summary leaked into a
+        # docstring the top-level-only version of this function couldn't see.
+        # Same extraction as above, just against the nested object.
+        hp = e.get("human_path") or {}
+        contact_name = (hp.get("contact_name") or "").strip()
+        if contact_name:
+            terms.add(contact_name)
+        for field in ("summary", "note"):
+            text = hp.get(field) or ""
+            terms.update(BIGRAM_RE.findall(text))
+            for name, _detail in CONTACT_RE.findall(text):
+                name = name.strip().rstrip(",")
+                if name:
+                    terms.add(name)
+
     return {t for t in terms if len(t) >= MIN_TERM_LEN}
 
 
