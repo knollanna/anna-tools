@@ -6,6 +6,10 @@ the resume. Loaded on demand, not by default.
 **Source of truth is the PDF.** If they disagree, the PDF wins and this file is stale.
 Never add a role, date, metric, or credential that isn't here. If it isn't here, ask.
 
+**Quantified internal metrics live in `resume/full.private.md` (gitignored), not here.** This
+file is public — see the "Executive summary" and "Director, Technical Architects" sections
+below for where those figures slot in.
+
 ---
 
 ## Header
@@ -20,11 +24,12 @@ Solutions architect and technical leader with 11+ years of enterprise pre-sales 
 spanning Oracle and Salesforce, with deep expertise in cloud AI and enterprise architecture,
 and Healthcare & Life Sciences. Background in computational linguistics and NLP provides
 technical fluency in how large language models and conversational AI systems work, not just
-what they do. Currently leading AI-focused pre-sales including customer POC programs for
-Agentforce agentic AI and Data 360, including multi-cloud integrations across Salesforce's
-Hyperforce infrastructure. Proven track record building and coaching SE teams, designing
-structured development frameworks, and guiding complex enterprise accounts through technical
-discovery, solution design, and deployment across regulated industries.
+what they do. Led AI-focused pre-sales at Salesforce, building and operationalizing customer
+POC programs for Agentforce agentic AI and Data 360 across Salesforce's Hyperforce
+infrastructure — early groundwork for the forward-deployed engineering model later formalized
+company-wide. Proven track record building and coaching SE teams, designing structured
+development frameworks, and guiding complex enterprise accounts through technical discovery,
+solution design, and deployment across regulated industries.
 
 ---
 
@@ -39,9 +44,12 @@ discovery, solution design, and deployment across regulated industries.
 
 - Lead a team of 10 Technical Architects delivering industry-specific solutions to enterprise
   HLS accounts; serve as Tech Exec on accounts including McKesson, Pfizer, Regeneron, and HCSC
-- Launched and operationalized a dedicated team responsible for customer POC success for
-  Agentforce (agentic AI) and Data 360 — designed the intake process, defined evaluation
-  criteria, and triaged requests to match the right resources to each engagement
+- Designed and stood up Salesforce's Agentforce POC program from scratch — intake process,
+  evaluation criteria, and resource triage for agentic AI and Data 360 engagements across
+  dozens of accounts — early groundwork for the forward-deployed engineering model later
+  formalized company-wide across Salesforce pre-sales
+- Built a TA-owned demo-automation program (Consensus) to keep customer-facing demo content
+  current, driving measurable pipeline influence
 - Introduced an HLS-focused virtual workshop series for customer-facing teams in regulated
   industries
 - Built team through strategic hiring and onboarding; completed Salesforce Accelerate and
