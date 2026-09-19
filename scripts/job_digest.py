@@ -165,6 +165,34 @@ def _untouched_suffix(contacts_text: str) -> str:
     return f" (+{n} other{'s' if n != 1 else ''} untouched)"
 
 
+def due_actions(entries: list[dict]) -> list[tuple[dict, date, int]]:
+    """Open entries whose `next_action` is due today or overdue (see "Board
+    ordering" in rules/job-search.md). Overdue ones stay listed until the date
+    is moved forward, which doubles as a nudge to update it after an event.
+    Returns (entry, action_date, days_overdue)."""
+    today = date.today()
+    out = []
+    for e in entries:
+        na = e.get("next_action")
+        if e.get("stage") not in OPEN_STAGES or not isinstance(na, dict):
+            continue
+        try:
+            d = date.fromisoformat(na["date"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if d <= today:
+            out.append((e, d, (today - d).days))
+    return sorted(out, key=lambda t: (t[1], t[0]["next_action"].get("time", "")))
+
+
+def _due_line(e: dict, days_overdue: int) -> str:
+    na = e["next_action"]
+    when = f" {na['time']}" if na.get("time") else ""
+    what = f" — {_esc_slack(na['what'])}" if na.get("what") else ""
+    late = f" (overdue {days_overdue}d)" if days_overdue else ""
+    return f"• {_esc_slack(e['company'])}{when}{what}{late}"
+
+
 def stale_followups(entries: list[dict], threshold_days: int) -> list[tuple[dict, int]]:
     today = date.today()
     out = []
@@ -185,13 +213,20 @@ def build_blocks(entries: list[dict], threshold_days: int) -> list[dict]:
     warm_pending = sorted(warm_contacts_pending(entries, threshold_days),
                            key=lambda t: t[0]["company"])
     stale = sorted(stale_followups(entries, threshold_days), key=lambda t: -t[1])
+    due = due_actions(entries)
 
     header = (
         f"🗂️ *Job search digest* — {len(to_apply)} worth applying to, "
         f"{len(warm_pending)} warm contact(s) to reach out to, "
         f"{len(stale)} stale follow-up(s)"
+        + (f", {len(due)} due today" if due else "")
     )
     blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": header}}]
+
+    if due:
+        lines = "\n".join(_due_line(e, late) for e, _, late in due)
+        blocks.append({"type": "section", "text": {"type": "mrkdwn",
+                       "text": f"*📅 Due today*\n{lines}"}})
 
     if to_apply:
         lines = "\n".join(f"• {_apply_line(e)}" for e in to_apply)
@@ -216,7 +251,7 @@ def build_blocks(entries: list[dict], threshold_days: int) -> list[dict]:
         blocks.append({"type": "section", "text": {"type": "mrkdwn",
                        "text": f"*⏰ Follow-up needed ({threshold_days}+ days quiet)*\n{lines}"}})
 
-    if not (to_apply or warm_pending or stale):
+    if not (to_apply or warm_pending or stale or due):
         blocks.append({"type": "section", "text": {"type": "mrkdwn",
                        "text": "Nothing pending today."}})
 

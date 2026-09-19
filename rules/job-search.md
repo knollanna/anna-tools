@@ -351,6 +351,13 @@ next scheduled interview or call, so **set it when an interview is confirmed and
 after each one happens**. Entries without one sort last. Same discipline as `last_touch`: get
 the date from `date`, never invent one.
 
+**`next_action` also drives the digest's "Due today" section.** Any open entry whose
+`next_action` date is today or earlier is listed with its `what` text, overdue ones marked with
+how many days late, until the date is moved forward. That makes `what` one of the few free-text
+fields that leaves the machine (to the same Slack channel Anna controls, under the same scoped
+exception as contact names), so write it as a short action label ("send note to <contact>",
+"recruiter screen"), never comp, a candid assessment, or note prose.
+
 ### Posting link
 
 An entry can carry `url` — the posting's live link, a plain string sibling to
